@@ -20,12 +20,13 @@ export default function AgentBadge({ personality, size = 'md' }: AgentBadgeProps
       }}
     >
       <span>{config.icon}</span>
-      <span className="font-display font-semibold">{config.name}</span>
+      <span className="font-display font-bold tracking-tight">{config.name}</span>
       <span
-        className="font-mono px-2 py-0.5 rounded-full"
+        className="font-data px-2 py-0.5 rounded-full uppercase"
         style={{
           background: `rgba(${config.accentRgb}, 0.1)`,
-          fontSize: size === 'sm' ? '0.6rem' : '0.65rem',
+          fontSize: size === 'sm' ? '9px' : '10px',
+          letterSpacing: '0.08em',
         }}
       >
         {config.riskTag}
