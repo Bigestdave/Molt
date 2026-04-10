@@ -136,7 +136,7 @@ export default function DashboardScreen() {
             />
             <span className="hidden sm:inline">{activeVault.chainName}</span>
           </div>
-          <WalletMenu wallet={wallet || '0x...'} />
+          <WalletMenu />
         </div>
       </nav>
 
