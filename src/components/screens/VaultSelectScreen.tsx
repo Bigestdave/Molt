@@ -5,6 +5,7 @@ import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
 import { SUPPORTED_CHAINS } from '../../constants/chains';
 import { CHAIN_ICONS } from '../icons/ChainIcons';
+import { ConnectButton, useWalletState } from '../ui/ConnectButton';
 import type { NormalizedVault } from '../../store/appStore';
 
 function ShimmerRow() {
@@ -34,12 +35,14 @@ export default function VaultSelectScreen() {
       .sort((a, b) => config.rankVault(b, maxApy) - config.rankVault(a, maxApy));
   }, [vaults, config]);
 
+  const { address, isConnected } = useWalletState();
+
   const handleDeposit = () => {
-    if (!selectedVault) return;
+    if (!selectedVault || !isConnected || !address) return;
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount < 1) return;
-    setWallet('0xDEMO...USER');
-    setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: '0xmockhash' });
+    setWallet(address);
+    setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: '0xpending' });
     setScreen('hatch');
   };
 
@@ -219,14 +222,18 @@ export default function VaultSelectScreen() {
                   at current APY
                 </div>
 
-                <motion.button
-                  onClick={handleDeposit}
-                  className="btn-primary w-full"
-                  style={{ background: config.accent, borderRadius: '12px' }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Deposit & Hatch →
-                </motion.button>
+                {isConnected ? (
+                  <motion.button
+                    onClick={handleDeposit}
+                    className="btn-primary w-full"
+                    style={{ background: config.accent, borderRadius: '12px' }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Deposit & Hatch →
+                  </motion.button>
+                ) : (
+                  <ConnectButton accent={config.accent} accentRgb={config.accentRgb} fullWidth />
+                )}
               </div>
             </motion.div>
           )}
