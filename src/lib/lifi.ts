@@ -166,7 +166,7 @@ export async function fetchPortfolioPositions(walletAddress: string): Promise<un
   }
 }
 
-const COMPOSER_BASE = 'https://li.quest';
+// Composer base is defined at top as COMPOSER_BASE_URL
 
 export interface ComposerQuote {
   transactionRequest: {
