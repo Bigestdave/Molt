@@ -106,8 +106,9 @@ export default function DashboardScreen() {
     <div className="min-h-[100dvh] flex flex-col" style={{ background: 'var(--yp-bg)' }}>
       {/* Nav — responsive */}
       <nav className="border-b border-[var(--yp-border)] bg-[var(--yp-glass-strong)] backdrop-blur-xl px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between z-20 relative">
-        <div className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">
-          Yield<span style={{ color: config.accent }}>Pet</span>
+        <div className="flex items-baseline gap-2">
+          <span className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">Molt</span>
+          <span className="font-data text-[9px] tracking-[0.12em] text-[var(--yp-text-muted)] opacity-50 hidden sm:inline">YIELDPET</span>
         </div>
         <div className="hidden sm:flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
           <span className="text-base">{config.icon}</span>
