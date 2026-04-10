@@ -111,7 +111,7 @@ export default function DashboardScreen() {
                 accentRgb={config.accentRgb}
                 energyLevel={energyLevel}
                 creatureState={creatureState}
-                size={180}
+                size={220}
               />
             </div>
 
