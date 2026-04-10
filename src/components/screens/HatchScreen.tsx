@@ -45,7 +45,7 @@ export default function HatchScreen() {
       setStepIndex(4); setHatchProgress(1.0);
       await new Promise(r => setTimeout(r, 1000));
       setHatched(true); setStepIndex(5);
-      setCreatureName(generateCreatureName());
+      setCreatureName(generateCreatureName(personality ?? undefined));
       await new Promise(r => setTimeout(r, 1500));
       setScreen('dashboard');
     };
