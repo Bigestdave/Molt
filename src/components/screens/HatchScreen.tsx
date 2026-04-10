@@ -1,25 +1,19 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { parseUnits } from 'viem';
 import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import { useComposer } from '../../hooks/useComposer';
 import { useWalletState } from '../ui/ConnectButton';
+import { USDC_ADDRESSES, CHAIN_EXPLORERS } from '../../constants/chains';
 import HatchCanvas from '../creature/HatchCanvas';
 import { generateCreatureName } from '../../lib/creatureNames';
-import { parseUnits } from 'viem';
-
-const USDC_ADDRESSES: Record<number, string> = {
-  1: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  10: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
-  137: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-  8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-  42161: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-};
 
 const STEP_LABELS: Record<string, string> = {
   idle: 'Preparing...',
   quoting: 'Getting best route...',
-  signing: 'Waiting for signature...',
+  signing: 'Approve in wallet...',
   submitted: 'Transaction submitted...',
   confirmed: 'Deposit confirmed.',
   failed: 'Transaction failed.',
@@ -60,6 +54,7 @@ export default function HatchScreen() {
     const usdcAddress = USDC_ADDRESSES[chainId];
     if (!usdcAddress) {
       addLogEntry({ message: `USDC not supported on chain ${chainId}`, type: 'warning' });
+      toast.error(`USDC not supported on this chain`);
       return;
     }
 
@@ -72,22 +67,31 @@ export default function HatchScreen() {
       toToken: activeVault.address,
       fromAddress: address,
       fromAmount,
-    }).catch(() => {
-      // error state handled by useComposer
-    });
+    }).catch(() => {});
   }, [config, depositInfo, activeVault, address, execute, addLogEntry]);
 
-  // On confirmation, finalize and go to dashboard
+  // On confirmation → finalize and go to dashboard
   useEffect(() => {
     if (step !== 'confirmed' || !depositInfo) return;
     if (txHash) {
       setDeposit({ ...depositInfo, txHash });
+      const explorer = CHAIN_EXPLORERS[activeVault?.chainId ?? 0];
+      toast.success('Deposit confirmed!', {
+        description: 'Your creature is hatching...',
+        action: explorer ? { label: 'View TX', onClick: () => window.open(`${explorer}${txHash}`, '_blank') } : undefined,
+      });
     }
     setCreatureName(generateCreatureName(personality ?? undefined));
     addLogEntry({ message: 'Deposit confirmed on-chain. Creature hatched!', type: 'success' });
     const timeout = setTimeout(() => setScreen('dashboard'), 2000);
     return () => clearTimeout(timeout);
-  }, [step, txHash, depositInfo, personality, setDeposit, setCreatureName, setScreen, addLogEntry]);
+  }, [step, txHash, depositInfo, activeVault, personality, setDeposit, setCreatureName, setScreen, addLogEntry]);
+
+  // On failure
+  useEffect(() => {
+    if (step !== 'failed') return;
+    toast.error('Deposit failed', { description: error || 'Transaction was rejected or failed.' });
+  }, [step, error]);
 
   if (!config) return null;
 
@@ -136,13 +140,22 @@ export default function HatchScreen() {
           )}
 
           {step === 'failed' && (
-            <motion.button
-              onClick={() => { reset(); hasStartedRef.current = false; }}
-              className="btn-secondary mt-4 text-[12px] px-5 py-2"
-              whileTap={{ scale: 0.95 }}
-            >
-              Retry
-            </motion.button>
+            <div className="flex gap-3 mt-4 justify-center">
+              <motion.button
+                onClick={() => { reset(); hasStartedRef.current = false; }}
+                className="btn-secondary text-[12px] px-5 py-2"
+                whileTap={{ scale: 0.95 }}
+              >
+                Retry
+              </motion.button>
+              <motion.button
+                onClick={() => setScreen('vaultSelect')}
+                className="btn-secondary text-[12px] px-5 py-2"
+                whileTap={{ scale: 0.95 }}
+              >
+                Back
+              </motion.button>
+            </div>
           )}
         </div>
       </div>
