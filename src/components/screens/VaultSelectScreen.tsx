@@ -222,14 +222,18 @@ export default function VaultSelectScreen() {
                   at current APY
                 </div>
 
-                <motion.button
-                  onClick={handleDeposit}
-                  className="btn-primary w-full"
-                  style={{ background: config.accent, borderRadius: '12px' }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Deposit & Hatch →
-                </motion.button>
+                {isConnected ? (
+                  <motion.button
+                    onClick={handleDeposit}
+                    className="btn-primary w-full"
+                    style={{ background: config.accent, borderRadius: '12px' }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Deposit & Hatch →
+                  </motion.button>
+                ) : (
+                  <ConnectButton accent={config.accent} accentRgb={config.accentRgb} fullWidth />
+                )}
               </div>
             </motion.div>
           )}
