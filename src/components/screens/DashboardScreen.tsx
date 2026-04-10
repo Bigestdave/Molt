@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
