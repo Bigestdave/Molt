@@ -1,6 +1,6 @@
 import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
-import { supabase } from '@/integrations/supabase/client';
+
 
 const COMPOSER_BASE_URL = 'https://li.quest';
 
