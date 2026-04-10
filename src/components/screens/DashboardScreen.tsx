@@ -56,7 +56,7 @@ function WalletMenu({ wallet }: { wallet: string }) {
   );
 }
 
-
+export default function DashboardScreen() {
   const { config, getRankedVaults } = useAgentLogic();
   const { energyLevel, yieldHealth, stability, activity, creatureState } = useCreatureState();
 
