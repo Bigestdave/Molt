@@ -29,7 +29,7 @@ export default function OpportunityCard({ vault, personality, isActive, isTopPic
       {isTopPick && config && (
         <div className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 z-10"
           style={{ background: config.accent, color: 'var(--yp-bg)' }}>
-          <config.icon size={12} /> Top Pick
+          <config.icon size={12} color="var(--yp-bg)" /> Top Pick
         </div>
       )}
       <div className="flex justify-between items-start mb-4">
