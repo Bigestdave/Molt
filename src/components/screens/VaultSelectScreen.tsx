@@ -54,7 +54,7 @@ export default function VaultSelectScreen() {
       <nav className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-b border-[var(--yp-border)] bg-[var(--yp-glass-strong)] backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-baseline gap-2">
           <span className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">Molt</span>
-          <span className="font-data text-[9px] tracking-[0.12em] text-[var(--yp-text-muted)] opacity-50 hidden sm:inline">YIELDPET</span>
+          <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-70 hidden sm:inline">YIELDPET</span>
         </div>
         <div className="hidden sm:flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
           <span className="text-base">{config.icon}</span>
