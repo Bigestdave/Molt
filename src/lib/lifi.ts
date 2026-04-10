@@ -229,7 +229,7 @@ export async function getComposerQuote(params: {
     fromAmount: params.fromAmount,
   });
 
-  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: getHeaders() });
+  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: { 'Accept': 'application/json' } });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Composer quote failed: ${err}`);
