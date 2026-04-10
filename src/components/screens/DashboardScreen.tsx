@@ -85,6 +85,7 @@ export default function DashboardScreen() {
   const setShowRebalanceAlert = useAppStore((s) => s.setShowRebalanceAlert);
   const setScreen = useAppStore((s) => s.setScreen);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
 
   const { data: portfolioPositions } = usePortfolio();
 
