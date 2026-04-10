@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
@@ -12,6 +12,49 @@ const fadeUp = (delay = 0) => ({
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5, delay, ease: [0.4, 0, 0.2, 1] },
 });
+
+function WalletMenu({ wallet }: { wallet: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] border border-[var(--yp-border)] rounded-full px-3 py-1.5 hover:border-[var(--yp-border-hover)] hover:text-[var(--yp-text-secondary)] transition-colors cursor-pointer truncate max-w-[120px] sm:max-w-none"
+      >
+        {wallet}
+      </button>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: -4, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.15 }}
+          className="absolute right-0 top-full mt-2 bg-[var(--yp-surface)] border border-[var(--yp-border-hover)] rounded-xl overflow-hidden shadow-xl z-50 min-w-[160px]"
+        >
+          <div className="px-4 py-3 border-b border-[var(--yp-border)]">
+            <div className="font-data text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] mb-1">CONNECTED</div>
+            <div className="font-data text-[11px] text-[var(--yp-text-secondary)]">{wallet}</div>
+          </div>
+          <button
+            onClick={() => useAppStore.getState().reset()}
+            className="w-full text-left px-4 py-3 font-data text-[11px] text-red-400 hover:bg-[var(--yp-surface-2)] transition-colors cursor-pointer"
+          >
+            Disconnect & Reset
+          </button>
+        </motion.div>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardScreen() {
   const { config, getRankedVaults } = useAgentLogic();
@@ -85,15 +128,7 @@ export default function DashboardScreen() {
             />
             <span className="hidden sm:inline">{activeVault.chainName}</span>
           </div>
-          <span className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] truncate max-w-[100px] sm:max-w-none">
-            {wallet || '0x...'}
-          </span>
-          <button
-            onClick={() => useAppStore.getState().reset()}
-            className="ml-1 sm:ml-2 font-data text-[9px] sm:text-[10px] tracking-[0.08em] text-[var(--yp-text-muted)] border border-[var(--yp-border-hover)] rounded-full px-3 py-1.5 hover:text-[var(--yp-text-primary)] hover:border-[var(--yp-accent)] transition-colors cursor-pointer"
-          >
-            LOGOUT
-          </button>
+          <WalletMenu wallet={wallet || '0x...'} />
         </div>
       </nav>
 
