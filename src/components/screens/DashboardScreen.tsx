@@ -89,22 +89,25 @@ export default function DashboardScreen() {
 
   const { data: portfolioPositions } = usePortfolio();
 
-  // Poll real APY from earn API every 30s
+  // Poll real APY from earn API every 30s (skip for mock vaults)
+  const isRealVault = activeVault && activeVault.address.length >= 42;
   useEffect(() => {
-    if (!activeVault) return;
+    if (!activeVault || !isRealVault) {
+      // For mock vaults, just use stored APY
+      if (activeVault) addApyDatapoint(activeVault.apy);
+      return;
+    }
     let cancelled = false;
     const poll = async () => {
       try {
         const fresh = await fetchVaultDetail(activeVault.chainId, activeVault.address);
         if (fresh && !cancelled) {
           addApyDatapoint(fresh.apy);
-          // Update activeVault if APY changed significantly
           if (Math.abs(fresh.apy - activeVault.apy) > 0.01) {
             useAppStore.getState().setActiveVault({ ...activeVault, apy: fresh.apy, stabilityScore: fresh.stabilityScore });
           }
         }
       } catch {
-        // fallback: add current APY
         if (!cancelled) addApyDatapoint(activeVault.apy);
       }
     };
