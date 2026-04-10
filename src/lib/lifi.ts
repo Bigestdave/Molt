@@ -2,12 +2,15 @@ import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
 
 const EARN_BASE = 'https://earn.li.fi';
-const API_KEY = 'YOUR_API_KEY';
+const COMPOSER_BASE_URL = 'https://li.quest';
 
-const headers = {
-  'x-lifi-api-key': API_KEY,
-  'Accept': 'application/json',
-};
+function getHeaders() {
+  const apiKey = import.meta.env.VITE_LIFI_API_KEY || '';
+  return {
+    ...(apiKey ? { 'x-lifi-api-key': apiKey } : {}),
+    'Accept': 'application/json',
+  };
+}
 
 export interface RawVault {
   address: string;
@@ -96,7 +99,7 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
     params.set('sortBy', 'apy');
     params.set('limit', '50');
 
-    const res = await fetch(`${EARN_BASE}/v1/earn/vaults?${params}`, { headers });
+    const res = await fetch(`${EARN_BASE}/v1/earn/vaults?${params}`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     const vaults = Array.isArray(data) ? data : data.vaults ?? data.data ?? [];
@@ -111,7 +114,7 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
 
 export async function fetchVaultDetail(chainId: number, address: string): Promise<NormalizedVault | null> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/vaults/${chainId}/${address}`, { headers });
+    const res = await fetch(`${EARN_BASE}/v1/earn/vaults/${chainId}/${address}`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return normalizeVault(data);
@@ -122,7 +125,7 @@ export async function fetchVaultDetail(chainId: number, address: string): Promis
 
 export async function fetchChains(): Promise<ChainInfo[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/chains`, { headers });
+    const res = await fetch(`${EARN_BASE}/v1/earn/chains`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.chains ?? [];
@@ -139,7 +142,7 @@ export async function fetchChains(): Promise<ChainInfo[]> {
 
 export async function fetchProtocols(): Promise<ProtocolInfo[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/protocols`, { headers });
+    const res = await fetch(`${EARN_BASE}/v1/earn/protocols`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.protocols ?? [];
@@ -154,7 +157,7 @@ export async function fetchProtocols(): Promise<ProtocolInfo[]> {
 
 export async function fetchPortfolioPositions(walletAddress: string): Promise<unknown[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/portfolio/${walletAddress}/positions`, { headers });
+    const res = await fetch(`${EARN_BASE}/v1/earn/portfolio/${walletAddress}/positions`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.positions ?? [];
@@ -163,7 +166,7 @@ export async function fetchPortfolioPositions(walletAddress: string): Promise<un
   }
 }
 
-const COMPOSER_BASE = 'https://li.quest';
+// Composer uses COMPOSER_BASE_URL defined at top
 
 export interface ComposerQuote {
   transactionRequest: {
@@ -195,7 +198,7 @@ export async function getComposerQuote(params: {
     fromAmount: params.fromAmount,
   });
 
-  const res = await fetch(`${COMPOSER_BASE}/v1/quote?${query}`, { headers });
+  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: getHeaders() });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Composer quote failed: ${err}`);
