@@ -139,6 +139,10 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
 }
 
 export async function fetchVaultDetail(chainId: number, address: string): Promise<NormalizedVault | null> {
+  // Skip API call for mock/short addresses
+  if (!address || address.length < 42) {
+    return MOCK_VAULTS.find(v => v.chainId === chainId && v.address === address) ?? null;
+  }
   try {
     const res = await proxyFetch(`/v1/earn/vaults/${chainId}/${address}`);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
