@@ -132,7 +132,7 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
     params.set('sortBy', 'apy');
     params.set('limit', '50');
 
-    const res = await fetch(`${EARN_BASE}/v1/earn/vaults?${params}`, { headers: getHeaders() });
+    const res = await proxyFetch('/v1/earn/vaults', params);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     const vaults = Array.isArray(data) ? data : data.vaults ?? data.data ?? [];
@@ -147,7 +147,7 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
 
 export async function fetchVaultDetail(chainId: number, address: string): Promise<NormalizedVault | null> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/vaults/${chainId}/${address}`, { headers: getHeaders() });
+    const res = await proxyFetch(`/v1/earn/vaults/${chainId}/${address}`);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return normalizeVault(data);
@@ -158,7 +158,7 @@ export async function fetchVaultDetail(chainId: number, address: string): Promis
 
 export async function fetchChains(): Promise<ChainInfo[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/chains`, { headers: getHeaders() });
+    const res = await proxyFetch('/v1/earn/chains');
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     const raw = Array.isArray(data) ? data : data.chains ?? [];
@@ -180,7 +180,7 @@ export async function fetchChains(): Promise<ChainInfo[]> {
 
 export async function fetchProtocols(): Promise<ProtocolInfo[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/protocols`, { headers: getHeaders() });
+    const res = await proxyFetch('/v1/earn/protocols');
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.protocols ?? [];
@@ -195,7 +195,7 @@ export async function fetchProtocols(): Promise<ProtocolInfo[]> {
 
 export async function fetchPortfolioPositions(walletAddress: string): Promise<unknown[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/portfolio/${walletAddress}/positions`, { headers: getHeaders() });
+    const res = await proxyFetch(`/v1/earn/portfolio/${walletAddress}/positions`);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.positions ?? [];
