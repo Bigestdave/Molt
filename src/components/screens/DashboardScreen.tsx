@@ -111,7 +111,7 @@ export default function DashboardScreen() {
           <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-70 hidden sm:inline">YIELDPET</span>
         </div>
         <div className="hidden sm:flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
-          <span className="text-base">{config.icon}</span>
+          <config.icon size={16} style={{ color: config.accent }} />
           <span className="font-display font-bold text-[13px]">{config.name}</span>
           <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
             {config.riskTag.toUpperCase()}
@@ -232,7 +232,7 @@ export default function DashboardScreen() {
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-2.5">
                   <div className="flex items-center gap-2 font-display font-bold text-[12px] sm:text-[13px]" style={{ color: config.accent }}>
-                    ⚡ Rebalance Opportunity
+                    <Zap size={14} /> Rebalance Opportunity
                   </div>
                   <button
                     onClick={() => { setShowRebalanceAlert(false); addLogEntry({ message: 'Rebalance dismissed.', type: 'warning' }); }}
