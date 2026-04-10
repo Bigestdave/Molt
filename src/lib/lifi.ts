@@ -12,21 +12,29 @@ function getHeaders() {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface RawVault {
   address: string;
   chainId: number;
   name: string;
+  network?: string;
+  protocol?: string | { name: string; url?: string };
   protocolName?: string;
-  protocol?: string;
-  apy: number;
-  apyBreakdown?: Record<string, number>;
+  analytics?: {
+    apy?: { base?: number; total?: number; reward?: number };
+    tvl?: { usd?: string | number };
+  };
+  // Legacy flat fields (mock data compat)
+  apy?: number;
   tvlUsd?: number;
   tvl?: number;
-  underlyingTokens?: Array<{ address: string; symbol: string; name: string; decimals: number }>;
+  apyBreakdown?: Record<string, number>;
+  underlyingTokens?: Array<{ address: string; symbol: string; name?: string; decimals: number }>;
   stabilityScore?: number;
   asset?: string;
   chain?: { name: string; id: number };
   token?: { symbol: string; name: string };
+  tags?: string[];
 }
 
 export interface ChainInfo {
