@@ -226,6 +226,18 @@ export default function DashboardScreen() {
             <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
               {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
             </div>
+            {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
+              <button
+                onClick={() => {
+                  const explorer = CHAIN_EXPLORERS[activeVault.chainId];
+                  if (explorer) window.open(`${explorer}${depositInfo.txHash}`, '_blank');
+                }}
+                className="font-data text-[9px] mt-1.5 tracking-[0.08em] hover:underline cursor-pointer"
+                style={{ color: config.accent }}
+              >
+                VIEW TX ↗
+              </button>
+            )}
           </div>
 
           {/* Stats grid — horizontal on mobile */}
