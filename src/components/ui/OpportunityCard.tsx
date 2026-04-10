@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { MapPin } from 'lucide-react';
 import type { NormalizedVault } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import type { PersonalityType } from '../../lib/personalities';
@@ -24,7 +25,9 @@ export default function OpportunityCard({ vault, personality, isActive, isTopPic
       style={isTopPick && config ? { borderColor: `rgba(${config.accentRgb}, 0.3)` } : {}}
     >
       {isActive && (
-        <div className="absolute -top-2 -right-2 bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-full w-6 h-6 flex items-center justify-center text-xs z-10">📍</div>
+        <div className="absolute -top-2 -right-2 bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-full w-6 h-6 flex items-center justify-center z-10">
+          <MapPin size={12} className="text-[var(--yp-text-secondary)]" />
+        </div>
       )}
       {isTopPick && config && (
         <div className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 z-10"

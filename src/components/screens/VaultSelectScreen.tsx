@@ -184,12 +184,12 @@ export default function VaultSelectScreen() {
               {/* Deposit section */}
               <div className="bento-card p-5 sm:p-7">
                 <div className="meta-label mb-4">DEPOSIT AMOUNT</div>
-                <div className="flex items-center gap-3 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-xl px-4 sm:px-5 py-3 sm:py-4 mb-4 sm:mb-5 focus-within:border-[var(--yp-accent)] transition-colors">
+                <div className="flex items-center gap-3 bg-[var(--yp-surface-2)] border border-[rgba(255,255,255,0.06)] rounded-xl px-4 sm:px-5 py-3 sm:py-4 mb-3 focus-within:border-[var(--yp-accent)] focus-within:shadow-[0_0_0_1px_var(--yp-accent),0_0_12px_rgba(var(--yp-accent-rgb),0.1)] transition-all duration-300">
                   <span className="font-data text-[16px] sm:text-[18px] text-[var(--yp-text-muted)]">$</span>
                   <input
                     type="text"
                     inputMode="decimal"
-                    className="bg-transparent border-none outline-none font-data text-[24px] sm:text-[28px] font-medium text-[var(--yp-text)] w-full tracking-[-0.02em] [appearance:textfield]"
+                    className="bg-transparent border-none outline-none font-data text-[24px] sm:text-[28px] font-medium text-[var(--yp-text)] w-full tracking-[-0.02em] [appearance:textfield] placeholder:text-[var(--yp-text-muted)] placeholder:opacity-30"
                     value={amount}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -198,6 +198,24 @@ export default function VaultSelectScreen() {
                     placeholder="0"
                   />
                   <span className="font-data text-[11px] sm:text-[12px] text-[var(--yp-text-muted)] tracking-[0.08em] shrink-0">USDC</span>
+                </div>
+
+                {/* Preset amounts */}
+                <div className="flex gap-2 mb-4 sm:mb-5">
+                  {['100', '500', '1000'].map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setAmount(preset)}
+                      className="flex-1 font-data text-[11px] tracking-[0.05em] py-2 rounded-lg border transition-all duration-200 hover:brightness-125"
+                      style={{
+                        borderColor: amount === preset ? config.accent : 'var(--yp-border)',
+                        background: amount === preset ? `rgba(${config.accentRgb}, 0.1)` : 'var(--yp-surface)',
+                        color: amount === preset ? config.accent : 'var(--yp-text-secondary)',
+                      }}
+                    >
+                      ${preset}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="font-data text-[11px] sm:text-[12px] text-[var(--yp-text-secondary)] bg-[var(--yp-surface-3)] rounded-lg px-4 py-3 mb-4 sm:mb-5">
