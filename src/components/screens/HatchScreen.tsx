@@ -11,7 +11,7 @@ const HATCH_STEPS = [
   "Transaction submitted...",
   "Deposit confirmed.",
   "Your creature is waking up...",
-  "Hatched. 🎉"
+  "Hatched."
 ];
 
 export default function HatchScreen() {
