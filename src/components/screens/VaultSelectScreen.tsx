@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
 import { SUPPORTED_CHAINS } from '../../constants/chains';
+import { CHAIN_ICONS } from '../icons/ChainIcons';
 import type { NormalizedVault } from '../../store/appStore';
 
 function ShimmerRow() {
@@ -103,20 +104,14 @@ export default function VaultSelectScreen() {
             <motion.button
               key={c.id}
               onClick={() => setSelectedChainId(c.id)}
-              className={`chip shrink-0 ${selectedChainId === c.id ? 'active' : ''}`}
+              className={`chip shrink-0 flex items-center gap-1.5 ${selectedChainId === c.id ? 'active' : ''}`}
               whileTap={{ scale: 0.92 }}
+              style={selectedChainId === c.id ? { color: config.accent } : {}}
             >
-              <span
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{
-                  background: selectedChainId === c.id ? config.accent :
-                    c.id === 8453 ? '#2563eb' :
-                    c.id === 42161 ? '#3b82f6' :
-                    c.id === 1 ? '#627eea' :
-                    c.id === 10 ? '#ef4444' :
-                    c.id === 137 ? '#8b5cf6' : config.accent,
-                }}
-              />
+              {(() => {
+                const ChainIcon = CHAIN_ICONS[c.id];
+                return ChainIcon ? <ChainIcon size={13} /> : null;
+              })()}
               {c.name.toUpperCase()}
             </motion.button>
           ))}
