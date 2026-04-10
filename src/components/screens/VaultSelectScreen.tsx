@@ -1,17 +1,13 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
-import AgentBadge from '../ui/AgentBadge';
-import VaultRow from '../ui/VaultRow';
 import { SUPPORTED_CHAINS } from '../../constants/chains';
 import type { NormalizedVault } from '../../store/appStore';
 
 function ShimmerRow() {
-  return (
-    <div className="shimmer h-[72px] rounded-2xl" />
-  );
+  return <div className="shimmer h-[72px] rounded-[14px]" />;
 }
 
 export default function VaultSelectScreen() {
@@ -41,55 +37,59 @@ export default function VaultSelectScreen() {
     if (!selectedVault) return;
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount < 1) return;
-    setWallet('0xDemo...User');
+    setWallet('0xDEMO...USER');
     setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: '0xmockhash' });
     setScreen('hatch');
   };
 
   if (!config) return null;
 
+  const annualEarnings = selectedVault
+    ? (parseFloat(amount || '0') * (selectedVault.apy / 100)).toFixed(2)
+    : '0.00';
+
   return (
-    <div className="min-h-screen flex flex-col p-6 lg:p-10 max-w-5xl mx-auto">
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center mb-10"
-      >
-        <div className="font-display font-extrabold text-xl tracking-tighter">
+    <div className="min-h-screen flex flex-col">
+      {/* Top nav */}
+      <nav className="flex items-center justify-between px-8 py-5 border-b border-[var(--yp-border)] bg-[rgba(7,7,13,0.8)] backdrop-blur-xl sticky top-0 z-50">
+        <div className="font-display font-extrabold text-xl tracking-[-0.03em]">
           Yield<span style={{ color: config.accent }}>Pet</span>
         </div>
-        <AgentBadge personality={personality!} />
+        <div className="flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
+          <span className="text-base">{config.icon}</span>
+          <span className="font-display font-bold text-[13px]">{config.name}</span>
+          <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
+            {config.riskTag.toUpperCase()}
+          </span>
+        </div>
         <motion.button
           onClick={() => setScreen('personality')}
-          className="btn-secondary text-xs py-2 px-4"
+          className="btn-secondary text-[13px]"
           whileTap={{ scale: 0.95 }}
         >
           ← Back
         </motion.button>
-      </motion.header>
+      </nav>
 
-      {usingCachedData && (
-        <div className="bento-card p-3 mb-6 text-center">
-          <span className="meta-label" style={{ opacity: 1 }}>
-            <span className="inline-block w-2 h-2 rounded-full bg-[var(--yp-warning)] animate-pulse mr-2" />
-            Demo mode — cached vault data
-          </span>
-        </div>
-      )}
-
-      <div className="flex-1 flex flex-col min-h-0">
-        <motion.h2
+      <div className="flex-1 px-8 py-12 max-w-[900px] mx-auto w-full">
+        {/* Title */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="font-display font-extrabold text-4xl tracking-tighter mb-8"
+          className="mb-10"
         >
-          Select a position
-        </motion.h2>
+          <h2 className="font-display font-extrabold text-[40px] tracking-[-0.04em] leading-[0.95] mb-1.5">
+            Select a position
+          </h2>
+          {usingCachedData && (
+            <span className="font-data text-[12px] text-[var(--yp-text-secondary)]">
+              ● DEMO MODE — CACHED VAULT DATA
+            </span>
+          )}
+        </motion.div>
 
         {/* Chain filters */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-7">
           {SUPPORTED_CHAINS.map(c => (
             <motion.button
               key={c.id}
@@ -97,13 +97,24 @@ export default function VaultSelectScreen() {
               className={`chip ${selectedChainId === c.id ? 'active' : ''}`}
               whileTap={{ scale: 0.92 }}
             >
-              {c.icon} {c.name}
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: selectedChainId === c.id ? config.accent :
+                    c.id === 8453 ? '#2563eb' :
+                    c.id === 42161 ? '#3b82f6' :
+                    c.id === 1 ? '#627eea' :
+                    c.id === 10 ? '#ef4444' :
+                    c.id === 137 ? '#8b5cf6' : config.accent,
+                }}
+              />
+              {c.name.toUpperCase()}
             </motion.button>
           ))}
         </div>
 
         {/* Vault list */}
-        <div className="flex-1 overflow-y-auto mb-8 pr-2 custom-scrollbar">
+        <div className="flex flex-col gap-0.5 mb-5">
           {isLoading ? (
             <div className="flex flex-col gap-3">
               {[...Array(5)].map((_, i) => <ShimmerRow key={i} />)}
@@ -117,64 +128,148 @@ export default function VaultSelectScreen() {
               No USDC vaults available.
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {rankedVaults.map((vault, i) => (
-                <motion.div
-                  key={vault.id}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04, duration: 0.4 }}
-                >
-                  <VaultRow vault={vault} personality={personality!} isSelected={selectedVault?.id === vault.id} onSelect={setSelectedVault} />
-                </motion.div>
-              ))}
-            </div>
+            rankedVaults.map((vault, i) => (
+              <VaultRowInline
+                key={vault.id}
+                vault={vault}
+                isSelected={selectedVault?.id === vault.id}
+                onSelect={setSelectedVault}
+                accent={config.accent}
+                accentRgb={config.accentRgb}
+                delay={i * 0.04}
+              />
+            ))
           )}
         </div>
 
-        {/* Deposit panel */}
-        {selectedVault && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bento-card p-6"
-          >
-            <div className="flex gap-5">
-              <div className="text-3xl shrink-0">{config.icon}</div>
-              <div className="flex-1">
-                <p className="text-sm text-[var(--yp-text-secondary)] leading-relaxed mb-5 italic">
-                  "{config.getInsight(selectedVault.name, selectedVault.apy, selectedVault.stabilityScore)}"
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 items-end">
-                  <div className="flex-1 w-full">
-                    <label className="meta-label block mb-2">Deposit (USDC)</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--yp-text-muted)]">$</span>
-                      <input type="number" className="input-field pl-8" value={amount} onChange={(e) => setAmount(e.target.value)} min="1" />
-                    </div>
-                  </div>
-                  <div className="flex-1 w-full flex items-center justify-between bg-[var(--yp-surface)] p-4 rounded-2xl border border-[var(--yp-border)]">
-                    <span className="meta-label">Est. 1Y</span>
-                    <span className="font-data font-medium text-lg" style={{ color: config.accent }}>
-                      +${(parseFloat(amount || '0') * (selectedVault.apy / 100)).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex-1 w-full">
-                    <motion.button
-                      onClick={handleDeposit}
-                      className="btn-primary w-full glow-accent-strong"
-                      style={{ padding: '14px' }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Deposit & Hatch →
-                    </motion.button>
-                  </div>
+        {/* Agent insight + deposit */}
+        <AnimatePresence>
+          {selectedVault && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-5"
+            >
+              {/* Agent insight */}
+              <div
+                className="rounded-2xl p-6 border"
+                style={{
+                  borderColor: config.accent,
+                  background: `rgba(${config.accentRgb}, 0.03)`,
+                  boxShadow: `0 0 30px rgba(${config.accentRgb}, 0.08)`,
+                }}
+              >
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="text-base">{config.icon}</span>
+                  <span className="font-data text-[10px] tracking-[0.12em]" style={{ color: config.accent }}>
+                    {config.name.toUpperCase()} — ANALYSIS
+                  </span>
                 </div>
+                <p className="font-data text-[12px] text-[var(--yp-text-secondary)] leading-[1.8]">
+                  {config.getInsight(selectedVault.name, selectedVault.apy, selectedVault.stabilityScore)}
+                </p>
               </div>
-            </div>
-          </motion.div>
-        )}
+
+              {/* Deposit section */}
+              <div className="bento-card p-7">
+                <div className="meta-label mb-4">DEPOSIT AMOUNT</div>
+                <div
+                  className="flex items-center gap-3 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-xl px-5 py-4 mb-5 focus-within:border-[var(--yp-accent)] transition-colors"
+                >
+                  <span className="font-data text-[18px] text-[var(--yp-text-muted)]">$</span>
+                  <input
+                    type="number"
+                    className="bg-transparent border-none outline-none font-data text-[28px] font-medium text-[var(--yp-text)] w-full tracking-[-0.02em]"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    min="1"
+                  />
+                  <span className="font-data text-[12px] text-[var(--yp-text-muted)] tracking-[0.08em]">USDC</span>
+                </div>
+
+                <div className="font-data text-[12px] text-[var(--yp-text-secondary)] bg-[var(--yp-surface-3)] rounded-lg px-4 py-3 mb-5">
+                  Estimated annual earnings: <span style={{ color: config.accent, fontWeight: 500 }}>+${annualEarnings}</span> at current APY
+                </div>
+
+                <motion.button
+                  onClick={handleDeposit}
+                  className="btn-primary w-full"
+                  style={{ background: config.accent, borderRadius: '12px' }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Deposit & Hatch →
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+/* Inline vault row — tighter, integrated */
+function VaultRowInline({
+  vault, isSelected, onSelect, accent, accentRgb, delay,
+}: {
+  vault: NormalizedVault;
+  isSelected: boolean;
+  onSelect: (v: NormalizedVault) => void;
+  accent: string;
+  accentRgb: string;
+  delay: number;
+}) {
+  const stabilityPct = Math.round(vault.stabilityScore * 100);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      onClick={() => onSelect(vault)}
+      className={`vault-row flex items-center justify-between p-5 rounded-[14px] border ${
+        isSelected ? 'selected' : 'border-[var(--yp-border)]'
+      }`}
+      style={isSelected ? { borderColor: accent } : {}}
+    >
+      <div className="flex-1 min-w-0 pr-4">
+        <div className="flex items-center gap-2.5 mb-1.5">
+          <h3 className="font-display font-bold text-[15px] truncate tracking-[-0.02em]">{vault.name}</h3>
+          <span className="font-data text-[9px] tracking-[0.1em] px-2 py-0.5 rounded bg-[var(--yp-surface-3)] text-[var(--yp-text-secondary)] border border-[var(--yp-border)]">
+            {vault.chainName.toUpperCase()}
+          </span>
+        </div>
+        <div className="flex items-center gap-4 font-data text-[11px] text-[var(--yp-text-muted)]">
+          <span className="capitalize">{vault.protocol.replace('-', ' ')}</span>
+          <span>·</span>
+          <span>${(vault.tvlUsd / 1_000_000).toFixed(0)}M TVL</span>
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <span className="font-data text-[11px] text-[var(--yp-text-muted)] tracking-[0.06em]">STABILITY</span>
+          <div className="stability-bar flex-1" style={{ maxWidth: 80 }}>
+            <div
+              className="stability-bar-fill"
+              style={{
+                width: `${stabilityPct}%`,
+                background: stabilityPct > 70 ? accent : stabilityPct > 40 ? '#fbbf24' : '#ef4444',
+              }}
+            />
+          </div>
+          <span className="font-data text-[11px] text-[var(--yp-text-muted)]">{stabilityPct}%</span>
+        </div>
+      </div>
+
+      <div className="text-right shrink-0">
+        <div
+          className="font-data text-[22px] font-medium tracking-[-0.02em] leading-none"
+          style={{ color: accent }}
+        >
+          {vault.apy.toFixed(2)}%
+        </div>
+        <div className="font-data text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] mt-1">APY</div>
+      </div>
+    </motion.div>
   );
 }

@@ -4,6 +4,12 @@ import { useAppStore } from '../../store/appStore';
 import { personalities } from '../../lib/personalities';
 import type { PersonalityType } from '../../lib/personalities';
 
+const cardColors: Record<PersonalityType, { color: string; rgb: string; accent: string }> = {
+  steward: { color: '#4ade80', rgb: '74,222,128', accent: 'rgba(74,222,128,0.08)' },
+  hunter: { color: '#f97316', rgb: '249,115,22', accent: 'rgba(249,115,22,0.08)' },
+  sentinel: { color: '#818cf8', rgb: '129,140,248', accent: 'rgba(129,140,248,0.08)' },
+};
+
 export default function PersonalityScreen() {
   const setScreen = useAppStore((s) => s.setScreen);
   const selectedPersonality = useAppStore((s) => s.personality);
@@ -19,86 +25,138 @@ export default function PersonalityScreen() {
 
   if (!mounted) return null;
 
+  const selected = selectedPersonality ? personalities[selectedPersonality] : null;
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative">
-      {/* Ambient */}
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden">
+      {/* Ambient orbs */}
       <div
-        className="fixed inset-0 transition-all duration-1000 pointer-events-none"
+        className="fixed inset-0 pointer-events-none transition-all duration-1000"
         style={{
-          background: selectedPersonality
-            ? `radial-gradient(ellipse at 50% 90%, rgba(${personalities[selectedPersonality].accentRgb}, 0.08) 0%, transparent 50%)`
+          background: selected
+            ? `radial-gradient(600px at 50% -100px, rgba(${selected.accentRgb}, 0.12) 0%, transparent 60%)`
+            : undefined,
+        }}
+      />
+      <div
+        className="fixed inset-0 pointer-events-none transition-all duration-1000"
+        style={{
+          background: selected
+            ? `radial-gradient(400px at 80% 100%, rgba(${selected.accentRgb}, 0.06) 0%, transparent 60%)`
             : undefined,
         }}
       />
 
-      <div className="max-w-5xl w-full z-10">
-        {/* Hero */}
+      <div className="max-w-[900px] w-full z-10">
+        {/* Status pill */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          className="flex justify-center mb-10"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--yp-border-hover)] bg-[var(--yp-surface-2)]">
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{
+                background: selected?.accent || 'var(--yp-success)',
+                boxShadow: `0 0 8px ${selected?.accent || 'var(--yp-success)'}`,
+                animation: 'pulse-dot 2s ease-in-out infinite',
+              }}
+            />
+            <span className="font-data text-[10px] tracking-[0.15em] text-[var(--yp-text-secondary)]">
+              AUTONOMOUS DEFI AGENT
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Hero headline */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-          className="text-center mb-20"
+          transition={{ duration: 0.7, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+          className="text-center mb-6"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--yp-border)] bg-[var(--yp-surface)] mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--yp-success)] animate-pulse" />
-            <span className="meta-label" style={{ opacity: 1, fontSize: '11px' }}>Autonomous DeFi Agent</span>
-          </div>
-
-          <h1 className="font-display font-extrabold text-5xl md:text-7xl lg:text-8xl tracking-tighter leading-[0.95] mb-7">
+          <h1 className="font-display font-extrabold leading-[0.92] tracking-[-0.04em]"
+            style={{ fontSize: 'clamp(56px, 9vw, 120px)' }}>
             Your yield,{' '}
-            <span
-              className="italic transition-colors duration-500"
-              style={{ color: selectedPersonality ? personalities[selectedPersonality].accent : 'var(--yp-text)' }}
+            <em
+              className="block italic transition-colors duration-800"
+              style={{ color: selected?.accent || 'var(--yp-text)', fontStyle: 'italic' }}
             >
               alive.
-            </span>
+            </em>
           </h1>
-          <p className="font-data text-[var(--yp-text-secondary)] text-xs md:text-sm max-w-md mx-auto leading-relaxed opacity-70">
-            Select an autonomous agent personality. It will manage your DeFi
-            positions while its visual state reflects your yield health.
-          </p>
         </motion.div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
-          {Object.values(personalities).map((p, i) => {
-            const isSelected = selectedPersonality === p.id;
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="font-data text-[13px] text-[var(--yp-text-secondary)] text-center max-w-[480px] mx-auto leading-[1.7] mb-16"
+        >
+          Select an autonomous agent personality. It will
+          manage your DeFi positions while its visual state
+          reflects your yield health.
+        </motion.p>
+
+        {/* Personality Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+          {(Object.keys(personalities) as PersonalityType[]).map((id, i) => {
+            const p = personalities[id];
+            const cc = cardColors[id];
+            const isSelected = selectedPersonality === id;
+
             return (
               <motion.div
-                key={p.id}
+                key={id}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.4, 0, 0.2, 1] }}
-                onClick={() => handleSelect(p.id)}
-                className={`personality-card bento-card p-7 cursor-pointer ${isSelected ? 'selected glow-accent' : ''}`}
-                style={isSelected ? { borderColor: p.accent } : {}}
-                whileHover={{ y: -4 }}
+                transition={{ duration: 0.6, delay: 0.15 + i * 0.1, ease: [0.4, 0, 0.2, 1] }}
+                onClick={() => handleSelect(id)}
+                className={`personality-card bento-card p-7 ${isSelected ? 'selected' : ''}`}
+                style={{
+                  '--card-color': cc.color,
+                  '--card-rgb': cc.rgb,
+                  '--card-accent': cc.accent,
+                } as React.CSSProperties}
                 whileTap={{ scale: 0.97 }}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="text-4xl">{p.icon}</div>
-                  <div
-                    className="font-data text-[10px] uppercase font-medium px-3 py-1 rounded-full tracking-wider"
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="text-[28px] leading-none">{p.icon}</div>
+                  <span
+                    className="font-data text-[9px] tracking-[0.12em] px-2.5 py-1 rounded-full border"
                     style={{
-                      background: isSelected ? p.accent : 'var(--yp-surface-2)',
-                      color: isSelected ? 'var(--yp-bg)' : 'var(--yp-text-secondary)',
+                      borderColor: 'var(--yp-border-hover)',
+                      color: isSelected ? cc.color : 'var(--yp-text-muted)',
+                      background: isSelected ? `rgba(${cc.rgb}, 0.1)` : 'transparent',
                     }}
                   >
-                    {p.riskTag}
-                  </div>
+                    {p.riskTag.toUpperCase()}
+                  </span>
                 </div>
 
-                <h3 className="font-display font-extrabold text-2xl tracking-tight mb-2">{p.name}</h3>
-                <p className="font-display font-medium text-sm mb-4 transition-colors" style={{ color: p.accent }}>
-                  {p.tagline}
-                </p>
-                <p className="text-[var(--yp-text-muted)] text-sm leading-relaxed mb-6 h-[68px]">
+                {/* Name */}
+                <h3 className="font-display font-extrabold text-[22px] tracking-[-0.02em] mb-1.5">{p.name}</h3>
+                <p className="text-[12px] font-semibold mb-4" style={{ color: cc.color }}>{p.tagline}</p>
+
+                {/* Desc */}
+                <p className="font-data text-[11px] text-[var(--yp-text-secondary)] leading-[1.75] mb-5">
                   {p.description}
                 </p>
 
-                <div className="bg-[var(--yp-surface)] rounded-2xl p-3.5 border border-[var(--yp-border)]">
-                  <div className="meta-label mb-1.5">Logic Engine</div>
-                  <div className="font-data text-xs text-[var(--yp-text-secondary)] leading-snug">{p.rebalanceLogic}</div>
+                {/* Logic */}
+                <div className="pt-4 border-t border-[var(--yp-border)]">
+                  <div className="font-data text-[10px] text-[var(--yp-text-muted)] leading-[1.6]">
+                    Score = <span style={{ color: cc.color }}>
+                      {id === 'steward' ? 'stability × 0.65 + APY × 0.35' :
+                       id === 'hunter' ? 'APY (pure)' :
+                       'APY × stability'}
+                    </span>
+                    <br />
+                    {p.rebalanceLogic}
+                  </div>
                 </div>
               </motion.div>
             );
@@ -108,16 +166,20 @@ export default function PersonalityScreen() {
         {/* CTA */}
         <motion.div
           className="flex justify-center"
-          animate={{ opacity: selectedPersonality ? 1 : 0.25, y: selectedPersonality ? 0 : 8 }}
+          animate={{ opacity: selectedPersonality ? 1 : 0.35 }}
           transition={{ duration: 0.4 }}
         >
           <motion.button
             disabled={!selectedPersonality}
             onClick={() => selectedPersonality && setScreen('vaultSelect')}
-            className="btn-primary text-lg px-16 py-5 glow-accent-strong"
+            className="btn-primary text-[15px]"
+            style={selectedPersonality && selected ? {
+              background: selected.accent,
+              boxShadow: `0 0 40px rgba(${selected.accentRgb}, 0.4)`,
+            } : {}}
             whileTap={{ scale: 0.95 }}
           >
-            Hatch my pet →
+            Hatch with {selected?.name || 'your agent'} →
           </motion.button>
         </motion.div>
       </div>
