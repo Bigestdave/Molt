@@ -55,7 +55,7 @@ export default function HatchScreen() {
   if (!config) return null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center p-5 sm:p-6 relative overflow-hidden">
       {/* Radial glow bg */}
       <div
         className="absolute inset-0 z-0 transition-opacity duration-1000"
@@ -65,16 +65,17 @@ export default function HatchScreen() {
       />
 
       <div className="relative z-10 w-full max-w-md mx-auto text-center">
-        {/* Egg / creature */}
+        {/* Egg / creature — responsive size */}
         <motion.div
-          className="mb-12 h-[320px] flex items-center justify-center relative"
+          className="mb-8 sm:mb-12 flex items-center justify-center relative"
+          style={{ height: 'min(320px, 50vw)', minHeight: 200 }}
           layoutId="creature-container"
         >
-          <HatchCanvas accent={config.accent} accentRgb={config.accentRgb} progress={hatchProgress} hatched={hatched} size={320} />
+          <HatchCanvas accent={config.accent} accentRgb={config.accentRgb} progress={hatchProgress} hatched={hatched} size={280} />
         </motion.div>
 
-        {/* Progress card */}
-        <div className="bento-card p-6" style={{ minWidth: window.innerWidth > 500 ? 380 : 'auto' }}>
+        {/* Progress card — CSS-based responsive width */}
+        <div className="bento-card p-5 sm:p-6 w-full sm:min-w-[380px]">
           {/* Progress bar */}
           <div className="h-0.5 bg-[var(--yp-surface-3)] rounded-full mb-5 overflow-hidden">
             <motion.div
@@ -94,7 +95,7 @@ export default function HatchScreen() {
                   opacity: i === stepIndex ? 1 : 0,
                   y: i === stepIndex ? 0 : i < stepIndex ? -8 : 8,
                 }}
-                className="font-data text-[13px] absolute inset-x-0 text-center"
+                className="font-data text-[12px] sm:text-[13px] absolute inset-x-0 text-center"
                 style={{ color: i === 5 ? config.accent : 'var(--yp-text-secondary)' }}
               >
                 {text}

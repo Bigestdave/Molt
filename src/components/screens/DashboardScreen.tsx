@@ -49,7 +49,7 @@ export default function DashboardScreen() {
   const minutes = Math.floor(timeMs / 60000);
 
   const vitals = [
-    { label: 'YIELD HEALTH', value: yieldHealth, color: config.accent },
+    { label: 'YIELD', value: yieldHealth, color: config.accent },
     { label: 'STABILITY', value: stability, color: stability > 70 ? config.accent : stability > 40 ? '#fbbf24' : '#ef4444' },
     { label: 'ACTIVITY', value: activity, color: activity > 50 ? config.accent : '#f59e0b' },
   ];
@@ -60,63 +60,63 @@ export default function DashboardScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--yp-bg)' }}>
-      {/* Nav */}
-      <nav className="border-b border-[var(--yp-border)] bg-[rgba(7,7,13,0.9)] backdrop-blur-xl px-8 py-4 flex items-center justify-between z-20 relative">
-        <div className="font-display font-extrabold text-xl tracking-[-0.03em]">
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: 'var(--yp-bg)' }}>
+      {/* Nav — responsive */}
+      <nav className="border-b border-[var(--yp-border)] bg-[var(--yp-glass-strong)] backdrop-blur-xl px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between z-20 relative">
+        <div className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">
           Yield<span style={{ color: config.accent }}>Pet</span>
         </div>
-        <div className="flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
+        <div className="hidden sm:flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
           <span className="text-base">{config.icon}</span>
           <span className="font-display font-bold text-[13px]">{config.name}</span>
           <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
             {config.riskTag.toUpperCase()}
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 font-data text-[11px] text-[var(--yp-text-secondary)]">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 font-data text-[10px] sm:text-[11px] text-[var(--yp-text-secondary)]">
             <span
-              className="w-1.5 h-1.5 rounded-full"
+              className="w-[6px] h-[6px] rounded-full shrink-0"
               style={{
                 background: config.accent,
                 boxShadow: `0 0 8px ${config.accent}`,
                 animation: 'pulse-dot 2s ease-in-out infinite',
               }}
             />
-            {activeVault.chainName}
+            <span className="hidden sm:inline">{activeVault.chainName}</span>
           </div>
-          <span className="font-data text-[11px] text-[var(--yp-text-muted)]">
+          <span className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] truncate max-w-[100px] sm:max-w-none">
             {wallet || '0x...'}
           </span>
         </div>
       </nav>
 
       {/* Dashboard body */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-0 overflow-hidden" style={{ height: 'calc(100vh - 57px)' }}>
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-0 overflow-hidden lg:h-[calc(100dvh-57px)]">
         {/* ═══════ LEFT: CREATURE PANEL ═══════ */}
-        <div className="border-r border-[var(--yp-border)] flex flex-col overflow-y-auto custom-scrollbar lg:border-b-0 border-b">
-          {/* Creature canvas */}
+        <div className="border-b lg:border-b-0 lg:border-r border-[var(--yp-border)] flex flex-col overflow-y-auto custom-scrollbar">
+          {/* Creature canvas — compact on mobile */}
           <motion.div
             {...fadeUp(0)}
             layoutId="creature-container"
-            className="flex flex-col items-center px-6 pt-8 pb-4 relative"
+            className="flex flex-col items-center px-6 pt-6 sm:pt-8 pb-3 sm:pb-4 relative"
             style={{
-              background: `radial-gradient(ellipse at 50% 60%, rgba(${config.accentRgb}, 0.06) 0%, transparent 70%)`,
+              background: `radial-gradient(ellipse at 50% 60%, rgba(${config.accentRgb}, 0.07) 0%, transparent 70%)`,
             }}
           >
-            <div className="animate-float mb-4" style={{ minHeight: 220 }}>
+            <div className="animate-float mb-3 sm:mb-4">
               <CreatureCanvas
                 personality={personality!}
                 accent={config.accent}
                 accentRgb={config.accentRgb}
                 energyLevel={energyLevel}
                 creatureState={creatureState}
-                size={220}
+                size={180}
               />
             </div>
 
             <div
-              className="font-data text-[9px] tracking-[0.15em] px-2 py-0.5 rounded mb-1.5"
+              className="font-data text-[8px] sm:text-[9px] tracking-[0.15em] px-2 py-0.5 rounded mb-1"
               style={{
                 color: config.accent,
                 background: `rgba(${config.accentRgb}, 0.12)`,
@@ -125,29 +125,29 @@ export default function DashboardScreen() {
             >
               {creatureState.toUpperCase()}
             </div>
-            <h2 className="font-display font-extrabold text-[22px] tracking-[-0.03em]">{creatureName}</h2>
+            <h2 className="font-display font-extrabold text-[18px] sm:text-[22px] tracking-[-0.03em]">{creatureName}</h2>
           </motion.div>
 
           {/* Active position card */}
-          <div className="mx-6 mb-4 bg-[var(--yp-surface)] border border-[var(--yp-border-hover)] rounded-xl p-3.5">
-            <div className="meta-label mb-2">ACTIVE POSITION</div>
-            <div className="font-display font-bold text-[13px] mb-1">{activeVault.name}</div>
-            <div className="font-data text-[10px] text-[var(--yp-text-muted)]">
+          <div className="mx-4 sm:mx-6 mb-3 sm:mb-4 bg-[var(--yp-surface)] border border-[var(--yp-border-hover)] rounded-xl p-3 sm:p-3.5">
+            <div className="meta-label mb-1.5 sm:mb-2">ACTIVE POSITION</div>
+            <div className="font-display font-bold text-[12px] sm:text-[13px] mb-0.5 sm:mb-1 truncate">{activeVault.name}</div>
+            <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
               {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
             </div>
           </div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-3 gap-2 mx-6 mb-4">
+          {/* Stats grid — horizontal on mobile */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mx-4 sm:mx-6 mb-3 sm:mb-4">
             {[
               { label: 'DEPOSITED', value: `$${depositInfo.amount.toFixed(2)}` },
               { label: 'EARNED', value: `+$${earnedUSD.toFixed(6)}`, accent: true },
               { label: 'APY', value: `${activeVault.apy.toFixed(2)}%`, accent: true },
             ].map(s => (
-              <div key={s.label} className="bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-xl p-3 text-center">
-                <div className="meta-label mb-1">{s.label}</div>
+              <div key={s.label} className="bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
+                <div className="meta-label mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">{s.label}</div>
                 <div
-                  className="font-data text-[14px] font-medium tracking-[-0.01em]"
+                  className="font-data text-[12px] sm:text-[14px] font-medium tracking-[-0.01em]"
                   style={s.accent ? { color: config.accent } : {}}
                 >
                   {s.value}
@@ -156,55 +156,55 @@ export default function DashboardScreen() {
             ))}
           </div>
 
-          {/* Vitals */}
-          <div className="px-6 py-4 border-t border-[var(--yp-border)] flex-1">
-            <div className="meta-label mb-4">VITALS</div>
+          {/* Vitals — compact */}
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-[var(--yp-border)] flex-1">
+            <div className="meta-label mb-3 sm:mb-4 text-[8px] sm:text-[9px]">VITALS</div>
             {vitals.map(v => (
-              <div key={v.label} className="flex items-center gap-3 mb-3.5">
-                <span className="font-data text-[10px] text-[var(--yp-text-muted)] w-[65px] shrink-0 tracking-[0.06em]">
+              <div key={v.label} className="flex items-center gap-2.5 sm:gap-3 mb-3">
+                <span className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] w-[55px] sm:w-[65px] shrink-0 tracking-[0.06em]">
                   {v.label}
                 </span>
                 <div className="vitals-bar-track flex-1">
                   <div className="vitals-bar-fill" style={{ width: `${v.value}%`, background: v.color }} />
                 </div>
-                <span className="font-data text-[10px] text-[var(--yp-text-secondary)] w-8 text-right">{v.value}%</span>
+                <span className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-secondary)] w-7 sm:w-8 text-right">{v.value}%</span>
               </div>
             ))}
-            <div className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.08em] text-center mt-2">
+            <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] tracking-[0.08em] text-center mt-1 sm:mt-2">
               ACTIVE · {minutes}M
             </div>
           </div>
         </div>
 
         {/* ═══════ RIGHT: DATA PANEL ═══════ */}
-        <div className="overflow-y-auto custom-scrollbar p-7 flex flex-col gap-6">
+        <div className="overflow-y-auto custom-scrollbar p-4 sm:p-7 flex flex-col gap-4 sm:gap-6">
           {/* Rebalance alert */}
           {showRebalanceAlert && rebalanceTarget && (
             <motion.div {...fadeUp()}>
               <div
-                className="rounded-2xl p-5 border"
+                className="rounded-2xl p-4 sm:p-5 border"
                 style={{
                   background: `rgba(${config.accentRgb}, 0.06)`,
                   borderColor: `rgba(${config.accentRgb}, 0.4)`,
                 }}
               >
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2 font-display font-bold text-[13px]" style={{ color: config.accent }}>
+                <div className="flex items-center justify-between mb-2 sm:mb-2.5">
+                  <div className="flex items-center gap-2 font-display font-bold text-[12px] sm:text-[13px]" style={{ color: config.accent }}>
                     ⚡ Rebalance Opportunity
                   </div>
                   <button
                     onClick={() => { setShowRebalanceAlert(false); addLogEntry({ message: 'Rebalance dismissed.', type: 'warning' }); }}
-                    className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.08em] hover:text-[var(--yp-text)] cursor-pointer"
+                    className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] tracking-[0.08em] hover:text-[var(--yp-text)] cursor-pointer transition-colors"
                   >
                     DISMISS
                   </button>
                 </div>
-                <p className="font-data text-[12px] text-[var(--yp-text-secondary)] leading-[1.7] mb-4">
+                <p className="font-data text-[11px] sm:text-[12px] text-[var(--yp-text-secondary)] leading-[1.7] mb-3 sm:mb-4">
                   {config.getRebalanceMessage(activeVault.apy, rebalanceTarget.apy, rebalanceTarget.name)}
                 </p>
                 <motion.button
                   onClick={() => { setShowRebalanceAlert(false); setScreen('rebalance'); }}
-                  className="btn-primary text-[13px] py-2.5 px-6"
+                  className="btn-primary text-[12px] sm:text-[13px] py-2.5 px-5 sm:px-6"
                   style={{ background: config.accent, borderRadius: 8 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -214,44 +214,44 @@ export default function DashboardScreen() {
             </motion.div>
           )}
 
-          {/* APY Chart — THE BIG NUMBER */}
-          <motion.div {...fadeUp(0.1)} className="bento-card p-6">
-            <div className="flex items-start justify-between mb-5">
+          {/* APY Chart — THE BIG NUMBER with text glow */}
+          <motion.div {...fadeUp(0.1)} className="bento-card p-5 sm:p-6">
+            <div className="flex items-start justify-between mb-4 sm:mb-5">
               <div>
-                <div className="meta-label mb-2">LIVE APY</div>
-                <div className="flex items-baseline gap-2">
+                <div className="meta-label mb-2 text-[8px] sm:text-[9px]">LIVE APY</div>
+                <div className="flex items-baseline gap-1.5 sm:gap-2">
                   <span
-                    className="font-data text-[52px] font-medium tracking-[-0.04em] leading-none"
+                    className="font-data text-[40px] sm:text-[52px] font-medium tracking-[-0.04em] leading-none text-glow"
                     style={{ color: config.accent }}
                   >
                     {activeVault.apy.toFixed(2)}
                   </span>
                   <span
-                    className="font-data text-[20px]"
-                    style={{ color: `rgba(${config.accentRgb}, 0.6)` }}
+                    className="font-data text-[16px] sm:text-[20px]"
+                    style={{ color: `rgba(${config.accentRgb}, 0.5)` }}
                   >
                     %
                   </span>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-data text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] border border-[var(--yp-border)] rounded px-2 py-1">
+              <div className="text-right mt-1">
+                <div className="font-data text-[8px] sm:text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] border border-[var(--yp-border)] rounded px-2 py-1">
                   STABILITY {(activeVault.stabilityScore * 100).toFixed(0)}%
                 </div>
               </div>
             </div>
-            <ApyChart data={apyHistory} accentRgb={config.accentRgb} height={120} />
+            <ApyChart data={apyHistory} accentRgb={config.accentRgb} height={100} />
           </motion.div>
 
-          {/* Opportunities — 2-col grid */}
+          {/* Opportunities — responsive grid */}
           <motion.div {...fadeUp(0.15)}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="meta-label" style={{ opacity: 1 }}>AGENT-RANKED</div>
-              <div className="font-data text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] border border-[var(--yp-border)] rounded px-2 py-1">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="meta-label text-[8px] sm:text-[9px]" style={{ opacity: 1 }}>AGENT-RANKED</div>
+              <div className="font-data text-[8px] sm:text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] border border-[var(--yp-border)] rounded px-2 py-0.5 sm:py-1">
                 {config.rankingDescription.toUpperCase()}
               </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
               {rankedVaults.map((vault) => {
                 const isCurrent = vault.id === activeVault.id;
                 const isTopPick = !isCurrent && config.shouldRebalance(activeVault, vault);
@@ -260,28 +260,28 @@ export default function DashboardScreen() {
                 return (
                   <div
                     key={vault.id}
-                    className="bg-[var(--yp-surface-2)] border border-[var(--yp-border)] rounded-xl p-4 relative transition-all hover:border-[var(--yp-border-hover)]"
+                    className="bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-xl p-3.5 sm:p-4 relative transition-all duration-200 hover:border-[var(--yp-border-hover)] hover:bg-[var(--yp-surface-2)] min-h-[100px]"
                     style={
                       isCurrent ? { borderColor: `rgba(${config.accentRgb}, 0.4)` } :
                       isTopPick ? { borderColor: `rgba(${config.accentRgb}, 0.6)` } : {}
                     }
                   >
-                    {isCurrent && <span className="absolute top-3 right-3 text-[12px]">📍</span>}
-                    <div className="font-display font-bold text-[13px] tracking-[-0.01em] mb-1">{vault.name}</div>
-                    <div className="flex items-center gap-1.5 font-data text-[10px] text-[var(--yp-text-muted)] mb-3">
-                      <span className="capitalize">{vault.protocol.replace('-', ' ')}</span>
-                      <span className="px-1.5 py-0 rounded bg-[var(--yp-surface-3)] text-[8px] border border-[var(--yp-border)]">
+                    {isCurrent && <span className="absolute top-3 right-3 text-[11px]">📍</span>}
+                    <div className="font-display font-bold text-[12px] sm:text-[13px] tracking-[-0.01em] mb-0.5 sm:mb-1 truncate pr-6">{vault.name}</div>
+                    <div className="flex items-center gap-1.5 font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] mb-2.5 sm:mb-3">
+                      <span className="capitalize truncate">{vault.protocol.replace('-', ' ')}</span>
+                      <span className="px-1.5 py-0 rounded bg-[var(--yp-surface-3)] text-[7px] sm:text-[8px] border border-[var(--yp-border)] shrink-0">
                         {vault.chainName.toUpperCase()}
                       </span>
                     </div>
                     <div
-                      className="font-data text-[20px] font-medium tracking-[-0.02em] mb-2"
+                      className="font-data text-[18px] sm:text-[20px] font-medium tracking-[-0.02em] mb-2"
                       style={{ color: config.accent }}
                     >
                       {vault.apy.toFixed(2)}%
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-data text-[9px] text-[var(--yp-text-muted)] tracking-[0.08em]">STABILITY</span>
+                      <span className="font-data text-[8px] sm:text-[9px] text-[var(--yp-text-muted)] tracking-[0.08em] hidden sm:inline">STABILITY</span>
                       <div className="stability-bar flex-1">
                         <div
                           className="stability-bar-fill"
@@ -291,7 +291,7 @@ export default function DashboardScreen() {
                           }}
                         />
                       </div>
-                      <span className="font-data text-[9px] text-[var(--yp-text-secondary)]">{stabPct}%</span>
+                      <span className="font-data text-[8px] sm:text-[9px] text-[var(--yp-text-secondary)]">{stabPct}%</span>
                     </div>
                   </div>
                 );
@@ -299,12 +299,12 @@ export default function DashboardScreen() {
             </div>
           </motion.div>
 
-          {/* Agent Log — chronological, color-coded */}
-          <motion.div {...fadeUp(0.2)} className="bento-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="meta-label" style={{ opacity: 1 }}>AGENT LOG</div>
+          {/* Agent Log */}
+          <motion.div {...fadeUp(0.2)} className="bento-card p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="meta-label text-[8px] sm:text-[9px]" style={{ opacity: 1 }}>AGENT LOG</div>
               <span
-                className="w-[7px] h-[7px] rounded-full"
+                className="w-[6px] sm:w-[7px] h-[6px] sm:h-[7px] rounded-full shrink-0"
                 style={{
                   background: config.accent,
                   boxShadow: `0 0 8px ${config.accent}`,
@@ -312,22 +312,22 @@ export default function DashboardScreen() {
                 }}
               />
             </div>
-            <div className="flex flex-col gap-0.5 max-h-[260px] overflow-y-auto custom-scrollbar">
+            <div className="flex flex-col gap-0.5 max-h-[200px] sm:max-h-[260px] overflow-y-auto custom-scrollbar">
               {agentLog.length === 0 ? (
-                <div className="font-data text-[11px] text-[var(--yp-text-muted)] py-6 text-center">
+                <div className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] py-6 text-center">
                   Agent initializing observation protocols...
                 </div>
               ) : (
                 agentLog.map((log) => (
                   <div
                     key={log.timestamp}
-                    className="flex gap-3.5 px-3 py-2.5 rounded-lg transition-colors hover:bg-[var(--yp-surface-2)]"
+                    className="flex gap-2.5 sm:gap-3.5 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-colors hover:bg-[var(--yp-surface-2)] min-h-[36px] sm:min-h-[auto]"
                   >
-                    <span className="font-data text-[10px] text-[var(--yp-text-muted)] shrink-0 pt-0.5 tracking-[0.05em]">
+                    <span className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] shrink-0 pt-0.5 tracking-[0.05em]">
                       [{fmtTime(log.timestamp)}]
                     </span>
                     <span
-                      className="font-data text-[11px] leading-[1.6]"
+                      className="font-data text-[10px] sm:text-[11px] leading-[1.6]"
                       style={{
                         color:
                           log.type === 'action' ? config.accent :
