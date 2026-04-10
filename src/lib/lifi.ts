@@ -2,12 +2,15 @@ import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
 
 const EARN_BASE = 'https://earn.li.fi';
-const API_KEY = 'YOUR_API_KEY';
+const COMPOSER_BASE_URL = 'https://li.quest';
 
-const headers = {
-  'x-lifi-api-key': API_KEY,
-  'Accept': 'application/json',
-};
+function getHeaders() {
+  const apiKey = import.meta.env.VITE_LIFI_API_KEY || '';
+  return {
+    ...(apiKey ? { 'x-lifi-api-key': apiKey } : {}),
+    'Accept': 'application/json',
+  };
+}
 
 export interface RawVault {
   address: string;
