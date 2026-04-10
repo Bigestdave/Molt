@@ -2,7 +2,7 @@ import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
 
 const EARN_BASE = 'https://earn.li.fi';
-const COMPOSER_BASE_URL_URL = 'https://li.quest';
+const COMPOSER_BASE_URL = 'https://li.quest';
 
 function getHeaders() {
   const apiKey = import.meta.env.VITE_LIFI_API_KEY || '';
