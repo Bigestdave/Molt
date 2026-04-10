@@ -9,9 +9,6 @@ async function proxyFetch(path: string, params?: URLSearchParams): Promise<Respo
   const queryParams = new URLSearchParams(params);
   queryParams.set('path', path);
 
-  const { data: { session } } = await supabase.auth.getSession();
-
-  const projectId = import.meta.env.VITE_SUPABASE_URL?.replace('https://', '').split('.')[0] || '';
   const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lifi-proxy?${queryParams}`;
 
   const res = await fetch(fnUrl, {
@@ -22,10 +19,6 @@ async function proxyFetch(path: string, params?: URLSearchParams): Promise<Respo
     },
   });
   return res;
-}
-
-function getHeaders() {
-  return { 'Accept': 'application/json' };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
