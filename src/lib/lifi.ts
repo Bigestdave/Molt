@@ -145,7 +145,12 @@ export async function fetchChains(): Promise<ChainInfo[]> {
     const res = await fetch(`${EARN_BASE}/v1/earn/chains`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
-    return Array.isArray(data) ? data : data.chains ?? [];
+    const raw = Array.isArray(data) ? data : data.chains ?? [];
+    return raw.map((c: { chainId?: number; id?: number; name: string; logoURI?: string }) => ({
+      id: c.chainId ?? c.id ?? 0,
+      name: c.name,
+      logoURI: c.logoURI,
+    }));
   } catch {
     return [
       { id: 1, name: 'Ethereum' },
