@@ -12,21 +12,29 @@ function getHeaders() {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface RawVault {
   address: string;
   chainId: number;
   name: string;
+  network?: string;
+  protocol?: string | { name: string; url?: string };
   protocolName?: string;
-  protocol?: string;
-  apy: number;
-  apyBreakdown?: Record<string, number>;
+  analytics?: {
+    apy?: { base?: number; total?: number; reward?: number };
+    tvl?: { usd?: string | number };
+  };
+  // Legacy flat fields (mock data compat)
+  apy?: number;
   tvlUsd?: number;
   tvl?: number;
-  underlyingTokens?: Array<{ address: string; symbol: string; name: string; decimals: number }>;
+  apyBreakdown?: Record<string, number>;
+  underlyingTokens?: Array<{ address: string; symbol: string; name?: string; decimals: number }>;
   stabilityScore?: number;
   asset?: string;
   chain?: { name: string; id: number };
   token?: { symbol: string; name: string };
+  tags?: string[];
 }
 
 export interface ChainInfo {
@@ -56,21 +64,30 @@ const CHAIN_NAMES: Record<number, string> = {
 };
 
 function normalizeVault(raw: RawVault): NormalizedVault {
+  // Extract from nested analytics (live API) or flat fields (mock)
+  const rawApy = raw.analytics?.apy?.total ?? raw.apy ?? 0;
+  const rawTvl = raw.analytics?.tvl?.usd
+    ? (typeof raw.analytics.tvl.usd === 'string' ? parseFloat(raw.analytics.tvl.usd) : raw.analytics.tvl.usd)
+    : raw.tvlUsd ?? raw.tvl ?? 0;
+  const protocolName = typeof raw.protocol === 'object' ? raw.protocol?.name : raw.protocolName ?? raw.protocol ?? 'Unknown';
+
+  const apy = typeof rawApy === 'number' ? (rawApy > 1 ? rawApy : rawApy * 100) : 0;
+
   const stabilityScore = raw.stabilityScore ?? computeStabilityScore({
-    tvlUsd: raw.tvlUsd ?? raw.tvl ?? 0,
-    protocol: raw.protocolName ?? raw.protocol ?? '',
-    apy: (raw.apy ?? 0) * 100,
+    tvlUsd: rawTvl,
+    protocol: protocolName ?? '',
+    apy,
   });
 
   return {
     id: `${raw.chainId}-${raw.address}`,
     address: raw.address,
     chainId: raw.chainId,
-    chainName: CHAIN_NAMES[raw.chainId] ?? `Chain ${raw.chainId}`,
+    chainName: raw.network ?? CHAIN_NAMES[raw.chainId] ?? `Chain ${raw.chainId}`,
     name: raw.name || 'Unknown Vault',
-    protocol: raw.protocolName ?? raw.protocol ?? 'Unknown',
-    apy: typeof raw.apy === 'number' ? (raw.apy > 1 ? raw.apy : raw.apy * 100) : 0,
-    tvlUsd: raw.tvlUsd ?? raw.tvl ?? 0,
+    protocol: protocolName ?? 'Unknown',
+    apy,
+    tvlUsd: rawTvl,
     asset: raw.asset ?? raw.token?.symbol ?? raw.underlyingTokens?.[0]?.symbol ?? 'USDC',
     stabilityScore,
     apyBreakdown: raw.apyBreakdown,
@@ -128,7 +145,12 @@ export async function fetchChains(): Promise<ChainInfo[]> {
     const res = await fetch(`${EARN_BASE}/v1/earn/chains`, { headers: getHeaders() });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
-    return Array.isArray(data) ? data : data.chains ?? [];
+    const raw = Array.isArray(data) ? data : data.chains ?? [];
+    return raw.map((c: { chainId?: number; id?: number; name: string; logoURI?: string }) => ({
+      id: c.chainId ?? c.id ?? 0,
+      name: c.name,
+      logoURI: c.logoURI,
+    }));
   } catch {
     return [
       { id: 1, name: 'Ethereum' },
