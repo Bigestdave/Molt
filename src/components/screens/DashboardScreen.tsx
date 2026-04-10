@@ -309,7 +309,7 @@ export default function DashboardScreen() {
                       isTopPick ? { borderColor: `rgba(${config.accentRgb}, 0.6)` } : {}
                     }
                   >
-                    {isCurrent && <span className="absolute top-3 right-3 text-[11px]">📍</span>}
+                    {isCurrent && <span className="absolute top-3 right-3 text-[10px] text-[var(--yp-text-muted)]">●</span>}
                     <div className="font-display font-bold text-[12px] sm:text-[13px] tracking-[-0.01em] mb-0.5 sm:mb-1 truncate pr-6">{vault.name}</div>
                     <div className="flex items-center gap-1.5 font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] mb-2.5 sm:mb-3">
                       <span className="capitalize truncate">{vault.protocol.replace('-', ' ')}</span>

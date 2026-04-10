@@ -39,7 +39,7 @@ export default function RebalanceScreen() {
         incrementRebalance();
         addLogEntry({ message: `Rebalanced to ${rebalanceTarget.name}. Position upgraded.`, type: 'success' });
         setPhase('emerge');
-        setStatusText(`${creatureName} evolved! ✨`);
+        setStatusText(`${creatureName} evolved.`);
         await new Promise(r => setTimeout(r, 3000));
         setScreen('dashboard');
       } catch {
