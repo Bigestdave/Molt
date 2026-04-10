@@ -1,15 +1,24 @@
 import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
 
-const EARN_BASE = 'https://earn.li.fi';
+
 const COMPOSER_BASE_URL = 'https://li.quest';
 
-function getHeaders() {
-  const apiKey = import.meta.env.VITE_LIFI_API_KEY || '';
-  return {
-    ...(apiKey ? { 'x-lifi-api-key': apiKey } : {}),
-    'Accept': 'application/json',
-  };
+/** Call the lifi-proxy edge function which adds the API key server-side */
+async function proxyFetch(path: string, params?: URLSearchParams): Promise<Response> {
+  const queryParams = new URLSearchParams(params);
+  queryParams.set('path', path);
+
+  const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lifi-proxy?${queryParams}`;
+
+  const res = await fetch(fnUrl, {
+    headers: {
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      'Accept': 'application/json',
+    },
+  });
+  return res;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,7 +125,7 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
     params.set('sortBy', 'apy');
     params.set('limit', '50');
 
-    const res = await fetch(`${EARN_BASE}/v1/earn/vaults?${params}`, { headers: getHeaders() });
+    const res = await proxyFetch('/v1/earn/vaults', params);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     const vaults = Array.isArray(data) ? data : data.vaults ?? data.data ?? [];
@@ -131,7 +140,7 @@ export async function fetchVaults(chainId?: number): Promise<NormalizedVault[]> 
 
 export async function fetchVaultDetail(chainId: number, address: string): Promise<NormalizedVault | null> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/vaults/${chainId}/${address}`, { headers: getHeaders() });
+    const res = await proxyFetch(`/v1/earn/vaults/${chainId}/${address}`);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return normalizeVault(data);
@@ -142,7 +151,7 @@ export async function fetchVaultDetail(chainId: number, address: string): Promis
 
 export async function fetchChains(): Promise<ChainInfo[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/chains`, { headers: getHeaders() });
+    const res = await proxyFetch('/v1/earn/chains');
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     const raw = Array.isArray(data) ? data : data.chains ?? [];
@@ -164,7 +173,7 @@ export async function fetchChains(): Promise<ChainInfo[]> {
 
 export async function fetchProtocols(): Promise<ProtocolInfo[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/protocols`, { headers: getHeaders() });
+    const res = await proxyFetch('/v1/earn/protocols');
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.protocols ?? [];
@@ -179,7 +188,7 @@ export async function fetchProtocols(): Promise<ProtocolInfo[]> {
 
 export async function fetchPortfolioPositions(walletAddress: string): Promise<unknown[]> {
   try {
-    const res = await fetch(`${EARN_BASE}/v1/earn/portfolio/${walletAddress}/positions`, { headers: getHeaders() });
+    const res = await proxyFetch(`/v1/earn/portfolio/${walletAddress}/positions`);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.positions ?? [];
@@ -220,7 +229,7 @@ export async function getComposerQuote(params: {
     fromAmount: params.fromAmount,
   });
 
-  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: getHeaders() });
+  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: { 'Accept': 'application/json' } });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Composer quote failed: ${err}`);
