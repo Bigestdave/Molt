@@ -1,9 +1,12 @@
+import type { LucideIcon } from 'lucide-react';
+import { Shield, Zap, Compass } from 'lucide-react';
+
 export type PersonalityType = 'steward' | 'hunter' | 'sentinel';
 
 export interface PersonalityConfig {
   id: PersonalityType;
   name: string;
-  icon: string;
+  icon: LucideIcon;
   accent: string;
   accentRgb: string;
   riskTag: string;
