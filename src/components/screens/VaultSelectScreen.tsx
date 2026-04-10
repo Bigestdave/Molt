@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
@@ -37,12 +38,24 @@ export default function VaultSelectScreen() {
 
   const { address, isConnected } = useWalletState();
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const handleDeposit = () => {
     if (!selectedVault || !isConnected || !address) return;
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount < 1) return;
+    if (isNaN(numAmount) || numAmount < 1) {
+      toast.error('Enter a valid amount (minimum $1)');
+      return;
+    }
+    setShowConfirm(true);
+  };
+
+  const confirmDeposit = () => {
+    if (!selectedVault || !address) return;
+    const numAmount = parseFloat(amount);
     setWallet(address);
     setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: '0xpending' });
+    setShowConfirm(false);
     setScreen('hatch');
   };
 
