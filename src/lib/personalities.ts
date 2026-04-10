@@ -1,9 +1,12 @@
+import type { LucideIcon } from 'lucide-react';
+import { Shield, Zap, Compass } from 'lucide-react';
+
 export type PersonalityType = 'steward' | 'hunter' | 'sentinel';
 
 export interface PersonalityConfig {
   id: PersonalityType;
   name: string;
-  icon: string;
+  icon: LucideIcon;
   accent: string;
   accentRgb: string;
   riskTag: string;
@@ -57,7 +60,7 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
   steward: {
     id: 'steward',
     name: 'The Keeper',
-    icon: '🌿',
+    icon: Shield,
     accent: '#4ade80',
     accentRgb: '74, 222, 128',
     riskTag: 'Conservative',
@@ -83,7 +86,7 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
   hunter: {
     id: 'hunter',
     name: 'The Hunter',
-    icon: '⚡',
+    icon: Zap,
     accent: '#f97316',
     accentRgb: '249, 115, 22',
     riskTag: 'Aggressive',
@@ -109,7 +112,7 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
   sentinel: {
     id: 'sentinel',
     name: 'The Architect',
-    icon: '🔬',
+    icon: Compass,
     accent: '#818cf8',
     accentRgb: '129, 140, 248',
     riskTag: 'Analytical',

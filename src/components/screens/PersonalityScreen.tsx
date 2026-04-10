@@ -126,7 +126,7 @@ export default function PersonalityScreen() {
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
-                  <div className="text-[28px] leading-none">{p.icon}</div>
+                  <div className="leading-none"><p.icon size={26} style={{ color: cardColors[id].color }} /></div>
                   <span
                     className="font-data text-[9px] tracking-[0.12em] px-2.5 py-1 rounded-full border transition-colors duration-300"
                     style={{
