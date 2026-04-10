@@ -16,9 +16,13 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.5, delay, ease: [0.4, 0, 0.2, 1] },
 });
 
-function WalletMenu({ wallet }: { wallet: string }) {
+function WalletMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { shortAddress } = useWalletState();
+  const { disconnect } = useDisconnect();
+  const reset = useAppStore((s) => s.reset);
+  const displayWallet = shortAddress || useAppStore.getState().wallet || '0x...';
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -34,7 +38,7 @@ function WalletMenu({ wallet }: { wallet: string }) {
         onClick={() => setOpen(!open)}
         className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] border border-[var(--yp-border)] rounded-full px-3 py-1.5 hover:border-[var(--yp-border-hover)] hover:text-[var(--yp-text-secondary)] transition-colors cursor-pointer truncate max-w-[120px] sm:max-w-none"
       >
-        {wallet}
+        {displayWallet}
       </button>
       {open && (
         <motion.div
@@ -45,10 +49,10 @@ function WalletMenu({ wallet }: { wallet: string }) {
         >
           <div className="px-4 py-3 border-b border-[var(--yp-border)]">
             <div className="font-data text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] mb-1">CONNECTED</div>
-            <div className="font-data text-[11px] text-[var(--yp-text-secondary)]">{wallet}</div>
+            <div className="font-data text-[11px] text-[var(--yp-text-secondary)]">{displayWallet}</div>
           </div>
           <button
-            onClick={() => useAppStore.getState().reset()}
+            onClick={() => { disconnect(); reset(); }}
             className="w-full text-left px-4 py-3 font-data text-[11px] text-red-400 hover:bg-[var(--yp-surface-2)] transition-colors cursor-pointer"
           >
             Disconnect & Reset
