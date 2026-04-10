@@ -187,12 +187,15 @@ export default function VaultSelectScreen() {
                 <div className="flex items-center gap-3 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-xl px-4 sm:px-5 py-3 sm:py-4 mb-4 sm:mb-5 focus-within:border-[var(--yp-accent)] transition-colors">
                   <span className="font-data text-[16px] sm:text-[18px] text-[var(--yp-text-muted)]">$</span>
                   <input
-                    type="number"
-                    className="bg-transparent border-none outline-none font-data text-[24px] sm:text-[28px] font-medium text-[var(--yp-text)] w-full tracking-[-0.02em]"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    min="1"
+                    type="text"
                     inputMode="decimal"
+                    className="bg-transparent border-none outline-none font-data text-[24px] sm:text-[28px] font-medium text-[var(--yp-text)] w-full tracking-[-0.02em] [appearance:textfield]"
+                    value={amount}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '' || /^\d*\.?\d*$/.test(val)) setAmount(val);
+                    }}
+                    placeholder="0"
                   />
                   <span className="font-data text-[11px] sm:text-[12px] text-[var(--yp-text-muted)] tracking-[0.08em] shrink-0">USDC</span>
                 </div>
