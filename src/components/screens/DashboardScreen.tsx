@@ -5,6 +5,8 @@ import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import { useAgentLogic } from '../../hooks/useAgentLogic';
 import { useCreatureState } from '../../hooks/useCreatureState';
+import { useWalletState } from '../ui/ConnectButton';
+import { useDisconnect } from 'wagmi';
 import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
 
