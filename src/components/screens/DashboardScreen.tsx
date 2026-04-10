@@ -85,15 +85,7 @@ export default function DashboardScreen() {
             />
             <span className="hidden sm:inline">{activeVault.chainName}</span>
           </div>
-          <span className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] truncate max-w-[100px] sm:max-w-none">
-            {wallet || '0x...'}
-          </span>
-          <button
-            onClick={() => useAppStore.getState().reset()}
-            className="ml-1 sm:ml-2 font-data text-[9px] sm:text-[10px] tracking-[0.08em] text-[var(--yp-text-muted)] border border-[var(--yp-border-hover)] rounded-full px-3 py-1.5 hover:text-[var(--yp-text-primary)] hover:border-[var(--yp-accent)] transition-colors cursor-pointer"
-          >
-            LOGOUT
-          </button>
+          <WalletMenu wallet={wallet || '0x...'} />
         </div>
       </nav>
 
