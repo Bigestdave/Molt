@@ -56,7 +56,7 @@ const sentinelMessages = [
 export const personalities: Record<PersonalityType, PersonalityConfig> = {
   steward: {
     id: 'steward',
-    name: 'The Steward',
+    name: 'The Keeper',
     icon: '🌿',
     accent: '#4ade80',
     accentRgb: '74, 222, 128',
