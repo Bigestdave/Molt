@@ -4,6 +4,7 @@ const corsHeaders = {
 };
 
 const EARN_BASE = "https://earn.li.fi";
+const COMPOSER_BASE = "https://li.quest";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,10 +29,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate path starts with /v1/earn
-    if (!path.startsWith("/v1/earn")) {
+    // Route to the correct upstream
+    let base: string;
+    if (path.startsWith("/v1/earn")) {
+      base = EARN_BASE;
+    } else if (path.startsWith("/v1/quote") || path.startsWith("/v1/advanced") || path.startsWith("/v1/status")) {
+      base = COMPOSER_BASE;
+    } else {
       return new Response(
-        JSON.stringify({ error: "Invalid path — must start with /v1/earn" }),
+        JSON.stringify({ error: "Invalid path — must start with /v1/earn or /v1/quote" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -42,7 +48,7 @@ Deno.serve(async (req) => {
       if (key !== "path") forwardParams.set(key, value);
     });
 
-    const targetUrl = `${EARN_BASE}${path}${forwardParams.toString() ? "?" + forwardParams.toString() : ""}`;
+    const targetUrl = `${base}${path}${forwardParams.toString() ? "?" + forwardParams.toString() : ""}`;
 
     const res = await fetch(targetUrl, {
       method: req.method,
