@@ -1,12 +1,25 @@
 import { useState, useCallback } from 'react';
-import { getComposerQuote } from '../lib/lifi';
+import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { getComposerQuote, type ComposerQuote } from '../lib/lifi';
+import type { Hex } from 'viem';
 
 export type ComposerStep = 'idle' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
 
 export function useComposer() {
   const [step, setStep] = useState<ComposerStep>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<Hex | null>(null);
+  const [quote, setQuote] = useState<ComposerQuote | null>(null);
+
+  const { sendTransactionAsync } = useSendTransaction();
+  const { data: receipt, isLoading: isWaitingReceipt } = useWaitForTransactionReceipt({
+    hash: txHash ?? undefined,
+  });
+
+  // When receipt arrives and we're in 'submitted' state, move to confirmed
+  if (receipt && step === 'submitted') {
+    setStep('confirmed');
+  }
 
   const execute = useCallback(async (params: {
     fromChain: number;
@@ -15,30 +28,25 @@ export function useComposer() {
     toToken: string;
     fromAddress: string;
     fromAmount: string;
-    sendTransaction: (tx: { to: string; data: string; value: string }) => Promise<string>;
-    waitForReceipt: (hash: string) => Promise<void>;
   }) => {
     try {
       setStep('quoting');
       setError(null);
-      const quote = await getComposerQuote({
-        fromChain: params.fromChain,
-        toChain: params.toChain,
-        fromToken: params.fromToken,
-        toToken: params.toToken,
-        fromAddress: params.fromAddress,
-        fromAmount: params.fromAmount,
-      });
+      setTxHash(null);
+
+      const q = await getComposerQuote(params);
+      setQuote(q);
+
       setStep('signing');
-      const hash = await params.sendTransaction({
-        to: quote.transactionRequest.to,
-        data: quote.transactionRequest.data,
-        value: quote.transactionRequest.value,
+      const hash = await sendTransactionAsync({
+        to: q.transactionRequest.to as Hex,
+        data: q.transactionRequest.data as Hex,
+        value: BigInt(q.transactionRequest.value || '0'),
+        chainId: q.transactionRequest.chainId,
       });
+
       setTxHash(hash);
       setStep('submitted');
-      await params.waitForReceipt(hash);
-      setStep('confirmed');
       return hash;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Transaction failed';
@@ -46,13 +54,14 @@ export function useComposer() {
       setStep('failed');
       throw err;
     }
-  }, []);
+  }, [sendTransactionAsync]);
 
   const reset = useCallback(() => {
     setStep('idle');
     setError(null);
     setTxHash(null);
+    setQuote(null);
   }, []);
 
-  return { step, error, txHash, execute, reset, setStep, setTxHash };
+  return { step, error, txHash, quote, receipt, isWaitingReceipt, execute, reset };
 }
