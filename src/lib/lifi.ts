@@ -2,7 +2,7 @@ import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
 
 const EARN_BASE = 'https://earn.li.fi';
-const COMPOSER_BASE_URL = 'https://li.quest';
+const COMPOSER_BASE_URL_URL = 'https://li.quest';
 
 function getHeaders() {
   const apiKey = import.meta.env.VITE_LIFI_API_KEY || '';
@@ -166,7 +166,7 @@ export async function fetchPortfolioPositions(walletAddress: string): Promise<un
   }
 }
 
-// Composer base is defined at top as COMPOSER_BASE_URL
+// Composer base is defined at top as COMPOSER_BASE_URL_URL
 
 export interface ComposerQuote {
   transactionRequest: {
@@ -198,7 +198,7 @@ export async function getComposerQuote(params: {
     fromAmount: params.fromAmount,
   });
 
-  const res = await fetch(`${COMPOSER_BASE}/v1/quote?${query}`, { headers: getHeaders() });
+  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: getHeaders() });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Composer quote failed: ${err}`);
