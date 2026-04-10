@@ -219,7 +219,7 @@ export async function getComposerQuote(params: {
   fromAddress: string;
   fromAmount: string;
 }): Promise<ComposerQuote> {
-  const query = new URLSearchParams({
+  const queryParams = new URLSearchParams({
     fromChain: String(params.fromChain),
     toChain: String(params.toChain),
     fromToken: params.fromToken,
@@ -229,7 +229,7 @@ export async function getComposerQuote(params: {
     fromAmount: params.fromAmount,
   });
 
-  const res = await fetch(`${COMPOSER_BASE_URL}/v1/quote?${query}`, { headers: { 'Accept': 'application/json' } });
+  const res = await proxyFetch('/v1/quote', queryParams);
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Composer quote failed: ${err}`);
