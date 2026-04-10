@@ -19,7 +19,7 @@ export default function AgentBadge({ personality, size = 'md' }: AgentBadgeProps
         color: config.accent,
       }}
     >
-      <config.icon size={14} style={{ color: config.accent }} />
+      <config.icon size={14} color={config.accent} />
       <span className="font-display font-bold tracking-tight">{config.name}</span>
       <span
         className="font-data px-2 py-0.5 rounded-full uppercase"

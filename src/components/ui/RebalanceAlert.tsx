@@ -22,7 +22,7 @@ export default function RebalanceAlert({ personality, currentVault, targetVault,
       className="rebalance-alert bento-card glow-accent"
     >
       <div className="flex items-start gap-4 mb-5">
-        <div className="shrink-0 mt-1"><config.icon size={28} style={{ color: config.accent }} /></div>
+        <div className="shrink-0 mt-1"><config.icon size={28} color={config.accent} glow /></div>
         <div>
           <h3 className="font-display font-extrabold text-lg tracking-tight mb-1.5 flex items-center gap-2">
             Rebalance Opportunity
