@@ -126,7 +126,17 @@ export default function PersonalityScreen() {
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
-                  <div className="leading-none"><p.icon size={26} style={{ color: cardColors[id].color }} /></div>
+                  <div
+                    className="leading-none p-2 rounded-xl transition-all duration-500"
+                    style={{
+                      background: isSelected ? `rgba(${cc.rgb}, 0.12)` : `rgba(${cc.rgb}, 0.06)`,
+                      boxShadow: isSelected
+                        ? `0 0 20px rgba(${cc.rgb}, 0.3), 0 0 6px rgba(${cc.rgb}, 0.15)`
+                        : `0 0 10px rgba(${cc.rgb}, 0.1)`,
+                    }}
+                  >
+                    <p.icon size={24} style={{ color: cc.color, filter: isSelected ? `drop-shadow(0 0 6px rgba(${cc.rgb}, 0.6))` : 'none' }} />
+                  </div>
                   <span
                     className="font-data text-[9px] tracking-[0.12em] px-2.5 py-1 rounded-full border transition-colors duration-300"
                     style={{
