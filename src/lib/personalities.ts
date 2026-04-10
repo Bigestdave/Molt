@@ -108,7 +108,7 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
 
   sentinel: {
     id: 'sentinel',
-    name: 'The Sentinel',
+    name: 'The Architect',
     icon: '🔬',
     accent: '#818cf8',
     accentRgb: '129, 140, 248',
