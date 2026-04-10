@@ -166,7 +166,7 @@ export async function fetchPortfolioPositions(walletAddress: string): Promise<un
   }
 }
 
-// Composer base is defined at top as COMPOSER_BASE_URL_URL
+// Composer uses COMPOSER_BASE_URL defined at top
 
 export interface ComposerQuote {
   transactionRequest: {
