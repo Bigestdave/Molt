@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
@@ -37,12 +38,24 @@ export default function VaultSelectScreen() {
 
   const { address, isConnected } = useWalletState();
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const handleDeposit = () => {
     if (!selectedVault || !isConnected || !address) return;
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount < 1) return;
+    if (isNaN(numAmount) || numAmount < 1) {
+      toast.error('Enter a valid amount (minimum $1)');
+      return;
+    }
+    setShowConfirm(true);
+  };
+
+  const confirmDeposit = () => {
+    if (!selectedVault || !address) return;
+    const numAmount = parseFloat(amount);
     setWallet(address);
     setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: '0xpending' });
+    setShowConfirm(false);
     setScreen('hatch');
   };
 
@@ -238,9 +251,85 @@ export default function VaultSelectScreen() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Transaction confirmation modal */}
+        <AnimatePresence>
+          {showConfirm && selectedVault && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+              onClick={() => setShowConfirm(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bento-card p-6 sm:p-8 w-full max-w-[420px]"
+              >
+                <div className="meta-label mb-5 text-center">CONFIRM TRANSACTION</div>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between font-data text-[12px]">
+                    <span className="text-[var(--yp-text-muted)]">Action</span>
+                    <span className="text-[var(--yp-text-secondary)]">Deposit into vault</span>
+                  </div>
+                  <div className="flex justify-between font-data text-[12px]">
+                    <span className="text-[var(--yp-text-muted)]">Vault</span>
+                    <span className="text-[var(--yp-text)] font-medium truncate ml-4 text-right">{selectedVault.name}</span>
+                  </div>
+                  <div className="flex justify-between font-data text-[12px]">
+                    <span className="text-[var(--yp-text-muted)]">Chain</span>
+                    <span className="text-[var(--yp-text-secondary)]">{selectedVault.chainName}</span>
+                  </div>
+                  <div className="flex justify-between font-data text-[12px]">
+                    <span className="text-[var(--yp-text-muted)]">Protocol</span>
+                    <span className="text-[var(--yp-text-secondary)] capitalize">{selectedVault.protocol.replace('-', ' ')}</span>
+                  </div>
+                  <div className="h-px bg-[var(--yp-border)]" />
+                  <div className="flex justify-between font-data text-[14px]">
+                    <span className="text-[var(--yp-text-muted)]">Amount</span>
+                    <span style={{ color: config.accent }} className="font-medium">${parseFloat(amount).toFixed(2)} USDC</span>
+                  </div>
+                  <div className="flex justify-between font-data text-[12px]">
+                    <span className="text-[var(--yp-text-muted)]">Current APY</span>
+                    <span style={{ color: config.accent }}>{selectedVault.apy.toFixed(2)}%</span>
+                  </div>
+                  <div className="flex justify-between font-data text-[12px]">
+                    <span className="text-[var(--yp-text-muted)]">Est. Annual</span>
+                    <span className="text-[var(--yp-text-secondary)]">+${annualEarnings}</span>
+                  </div>
+                </div>
+
+                <div className="font-data text-[10px] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] rounded-lg px-3 py-2.5 mb-5 leading-[1.6]">
+                  You will be asked to sign a transaction in your wallet. The transaction routes your USDC through LI.FI into the selected vault. No private keys leave your browser.
+                </div>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    onClick={() => setShowConfirm(false)}
+                    className="btn-secondary flex-1 text-[13px]"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    onClick={confirmDeposit}
+                    className="btn-primary flex-1 text-[13px]"
+                    style={{ background: config.accent, borderRadius: '12px' }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Confirm & Sign
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Hide scrollbar for chain filters */}
       <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
     </div>
   );

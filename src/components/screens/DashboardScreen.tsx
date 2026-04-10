@@ -1,12 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
 import { Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import { useAgentLogic } from '../../hooks/useAgentLogic';
 import { useCreatureState } from '../../hooks/useCreatureState';
 import { useWalletState } from '../ui/ConnectButton';
 import { useDisconnect } from 'wagmi';
+import { usePortfolio } from '../../hooks/usePortfolio';
+import { fetchVaultDetail } from '../../lib/lifi';
+import { CHAIN_EXPLORERS } from '../../constants/chains';
 import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
 
@@ -81,16 +85,54 @@ export default function DashboardScreen() {
   const setShowRebalanceAlert = useAppStore((s) => s.setShowRebalanceAlert);
   const setScreen = useAppStore((s) => s.setScreen);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
 
-  // Earnings sim
+  const { data: portfolioPositions } = usePortfolio();
+
+  // Poll real APY from earn API every 30s
+  useEffect(() => {
+    if (!activeVault) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const fresh = await fetchVaultDetail(activeVault.chainId, activeVault.address);
+        if (fresh && !cancelled) {
+          addApyDatapoint(fresh.apy);
+          // Update activeVault if APY changed significantly
+          if (Math.abs(fresh.apy - activeVault.apy) > 0.01) {
+            useAppStore.getState().setActiveVault({ ...activeVault, apy: fresh.apy, stabilityScore: fresh.stabilityScore });
+          }
+        }
+      } catch {
+        // fallback: add current APY
+        if (!cancelled) addApyDatapoint(activeVault.apy);
+      }
+    };
+    poll();
+    const interval = setInterval(poll, 30_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [activeVault?.id]);
+
+  // Compute earned USD from portfolio positions or estimate from APY
   useEffect(() => {
     if (!depositInfo || !activeVault) return;
+    // Try to use real portfolio data
+    if (portfolioPositions && portfolioPositions.length > 0) {
+      const pos = portfolioPositions.find((p: any) =>
+        p.vault?.address?.toLowerCase() === activeVault.address.toLowerCase()
+      );
+      if (pos && (pos as any).earned?.usd != null) {
+        setEarnedUSD(Number((pos as any).earned.usd));
+        return;
+      }
+    }
+    // Fallback: estimate from deposit + APY + time
     const interval = setInterval(() => {
       const years = (Date.now() - depositInfo.timestamp) / (1000 * 60 * 60 * 24 * 365);
-      setEarnedUSD(depositInfo.amount * (activeVault.apy / 100) * years + Math.random() * 0.000001);
-    }, 1000);
+      setEarnedUSD(depositInfo.amount * (activeVault.apy / 100) * years);
+    }, 5000);
     return () => clearInterval(interval);
-  }, [depositInfo, activeVault, setEarnedUSD]);
+  }, [depositInfo, activeVault, portfolioPositions, setEarnedUSD]);
 
   if (!config || !activeVault || !depositInfo) return null;
 
@@ -184,6 +226,18 @@ export default function DashboardScreen() {
             <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
               {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
             </div>
+            {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
+              <button
+                onClick={() => {
+                  const explorer = CHAIN_EXPLORERS[activeVault.chainId];
+                  if (explorer) window.open(`${explorer}${depositInfo.txHash}`, '_blank');
+                }}
+                className="font-data text-[9px] mt-1.5 tracking-[0.08em] hover:underline cursor-pointer"
+                style={{ color: config.accent }}
+              >
+                VIEW TX ↗
+              </button>
+            )}
           </div>
 
           {/* Stats grid — horizontal on mobile */}

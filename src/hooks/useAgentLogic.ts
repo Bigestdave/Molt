@@ -18,15 +18,7 @@ export function useAgentLogic() {
   const lastIdleRef = useRef(0);
   const lastCheckRef = useRef(0);
 
-  useEffect(() => {
-    if (!activeVault || screen !== 'dashboard') return;
-    addApyDatapoint(activeVault.apy);
-    const interval = setInterval(() => {
-      const variance = (Math.random() - 0.5) * 0.3;
-      addApyDatapoint(Math.max(0, activeVault.apy + variance));
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [activeVault, screen, addApyDatapoint]);
+  // APY polling is now handled in DashboardScreen via fetchVaultDetail
 
   const checkRebalance = useCallback(() => {
     if (!config || !activeVault || !deposit || allVaults.length === 0) return;
