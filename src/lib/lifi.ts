@@ -1,15 +1,31 @@
 import type { NormalizedVault } from '../store/appStore';
 import { computeStabilityScore } from './stabilityScore';
+import { supabase } from '@/integrations/supabase/client';
 
-const EARN_BASE = 'https://earn.li.fi';
 const COMPOSER_BASE_URL = 'https://li.quest';
 
+/** Call the lifi-proxy edge function which adds the API key server-side */
+async function proxyFetch(path: string, params?: URLSearchParams): Promise<Response> {
+  const queryParams = new URLSearchParams(params);
+  queryParams.set('path', path);
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const projectId = import.meta.env.VITE_SUPABASE_URL?.replace('https://', '').split('.')[0] || '';
+  const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lifi-proxy?${queryParams}`;
+
+  const res = await fetch(fnUrl, {
+    headers: {
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      'Accept': 'application/json',
+    },
+  });
+  return res;
+}
+
 function getHeaders() {
-  const apiKey = import.meta.env.VITE_LIFI_API_KEY || '';
-  return {
-    ...(apiKey ? { 'x-lifi-api-key': apiKey } : {}),
-    'Accept': 'application/json',
-  };
+  return { 'Accept': 'application/json' };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
