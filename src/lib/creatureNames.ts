@@ -1,3 +1,5 @@
+import type { PersonalityType } from './personalities';
+
 const CREATURE_NAMES = [
   'Lumis', 'Verdex', 'Ophra', 'Cellix', 'Myco', 'Synth', 'Bloom', 'Cripta',
   'Nox', 'Void', 'Orbit', 'Haze', 'Flume', 'Wisp', 'Glim', 'Drex',
@@ -7,14 +9,14 @@ const CREATURE_NAMES = [
   'Opal', 'Aegis', 'Cypher', 'Vesper', 'Ember', 'Clarity', 'Drift', 'Nova',
 ];
 
-const CREATURE_SUFFIXES = [
-  'the Yielder', 'the Patient', 'the Fierce', 'the Wise',
-  'the Swift', 'the Calm', 'the Bold', 'the Bright',
-  'the Steady', 'the Keen', 'the Sharp', 'the Flowing',
-];
+const PERSONALITY_SUFFIX: Record<PersonalityType, string> = {
+  steward: 'the Keeper',
+  hunter: 'the Hunter',
+  sentinel: 'the Architect',
+};
 
-export function generateCreatureName(): string {
+export function generateCreatureName(personality?: PersonalityType): string {
   const name = CREATURE_NAMES[Math.floor(Math.random() * CREATURE_NAMES.length)];
-  const suffix = CREATURE_SUFFIXES[Math.floor(Math.random() * CREATURE_SUFFIXES.length)];
+  const suffix = personality ? PERSONALITY_SUFFIX[personality] : 'the Keeper';
   return `${name} ${suffix}`;
 }
