@@ -140,7 +140,7 @@
   box-shadow: 0 0 40px rgba(var(--yp-accent-rgb), 0.4);
 }
 .text-glow {
-  text-shadow: 0 0 40px currentColor, 0 0 80px currentColor;
+  text-shadow: 0 0 20px rgba(var(--yp-accent-rgb), 0.3);
 }
 
 /* ======================== PERSONALITY CARD ======================== */
