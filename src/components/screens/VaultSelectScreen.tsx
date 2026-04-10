@@ -57,7 +57,7 @@ export default function VaultSelectScreen() {
           <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-70 hidden sm:inline">YIELDPET</span>
         </div>
         <div className="hidden sm:flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
-          <config.icon size={16} style={{ color: config.accent }} />
+          <config.icon size={16} color={config.accent} />
           <span className="font-display font-bold text-[13px]">{config.name}</span>
           <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
             {config.riskTag.toUpperCase()}
@@ -65,7 +65,7 @@ export default function VaultSelectScreen() {
         </div>
         {/* Mobile: show icon only */}
         <div className="flex sm:hidden items-center gap-2 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-3 py-2">
-          <config.icon size={16} style={{ color: config.accent }} />
+          <config.icon size={16} color={config.accent} />
           <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
             {config.riskTag.toUpperCase()}
           </span>
@@ -171,7 +171,7 @@ export default function VaultSelectScreen() {
                 }}
               >
                 <div className="flex items-center gap-2.5 mb-3">
-                  <config.icon size={16} style={{ color: config.accent }} />
+                  <config.icon size={16} color={config.accent} />
                   <span className="font-data text-[10px] tracking-[0.12em]" style={{ color: config.accent }}>
                     {config.name.toUpperCase()} — ANALYSIS
                   </span>

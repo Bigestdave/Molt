@@ -135,7 +135,7 @@ export default function PersonalityScreen() {
                         : `0 0 10px rgba(${cc.rgb}, 0.1)`,
                     }}
                   >
-                    <p.icon size={24} style={{ color: cc.color, filter: isSelected ? `drop-shadow(0 0 6px rgba(${cc.rgb}, 0.6))` : 'none' }} />
+                    <p.icon size={28} color={cc.color} glow={isSelected} />
                   </div>
                   <span
                     className="font-data text-[9px] tracking-[0.12em] px-2.5 py-1 rounded-full border transition-colors duration-300"

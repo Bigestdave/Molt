@@ -112,7 +112,7 @@ export default function DashboardScreen() {
           <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-70 hidden sm:inline">YIELDPET</span>
         </div>
         <div className="hidden sm:flex items-center gap-2.5 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-4 py-2">
-          <config.icon size={16} style={{ color: config.accent }} />
+          <config.icon size={16} color={config.accent} />
           <span className="font-display font-bold text-[13px]">{config.name}</span>
           <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
             {config.riskTag.toUpperCase()}
