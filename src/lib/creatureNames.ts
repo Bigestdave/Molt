@@ -7,6 +7,12 @@ const CREATURE_NAMES = [
   'Hexa', 'Zeph', 'Aria', 'Flux', 'Pixel', 'Glyph', 'Moth', 'Kern',
   'Solace', 'Nimbus', 'Prism', 'Dusk', 'Spore', 'Brine', 'Coda', 'Latch',
   'Opal', 'Aegis', 'Cypher', 'Vesper', 'Ember', 'Clarity', 'Drift', 'Nova',
+  'Onyx', 'Pyre', 'Wraith', 'Seren', 'Vale', 'Crux', 'Lyra', 'Obsid',
+  'Kael', 'Revn', 'Axiom', 'Brume', 'Cirro', 'Dex', 'Elara', 'Ferox',
+  'Grimm', 'Ikon', 'Jinx', 'Korr', 'Lumen', 'Morph', 'Nexis', 'Omni',
+  'Phex', 'Qova', 'Riven', 'Sigil', 'Tempus', 'Umbra', 'Vex', 'Wren',
+  'Xael', 'Yonder', 'Zenith', 'Aether', 'Basalt', 'Cortex', 'Dune', 'Etch',
+  'Fractal', 'Gale', 'Hex', 'Ignis', 'Jarv', 'Kryos', 'Lattice', 'Mote',
 ];
 
 const PERSONALITY_SUFFIX: Record<PersonalityType, string> = {
