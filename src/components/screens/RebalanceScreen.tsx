@@ -18,6 +18,7 @@ function stepToPhase(step: string): 'spin' | 'burst' | 'emerge' {
 
 const STATUS_MAP: Record<string, string> = {
   idle: 'Preparing rebalance...',
+  switching: 'Switching network...',
   quoting: 'Finding best route...',
   signing: 'Approve in wallet...',
   submitted: 'Transaction submitted...',
@@ -28,8 +29,11 @@ const STATUS_MAP: Record<string, string> = {
 function categorizeError(error: string | null): { title: string; message: string; recoverable: boolean } {
   if (!error) return { title: 'Unknown Error', message: 'Something went wrong. Please try again.', recoverable: true };
   const lower = error.toLowerCase();
-  if (lower.includes('user rejected') || lower.includes('user denied') || lower.includes('rejected the request')) {
+  if (lower.includes('user rejected') || lower.includes('user denied') || lower.includes('rejected the request') || lower.includes('rejected the chain switch')) {
     return { title: 'Transaction Rejected', message: 'You cancelled the transaction in your wallet. No funds were moved.', recoverable: true };
+  }
+  if (lower.includes('chain switch') || lower.includes('does not match the target chain')) {
+    return { title: 'Wrong Network', message: 'Your wallet is on a different chain. Please allow the network switch when prompted, or manually switch in your wallet.', recoverable: true };
   }
   if (lower.includes('insufficient') || lower.includes('exceeds balance') || lower.includes('not enough')) {
     return { title: 'Insufficient Balance', message: 'You don\'t have enough funds for this rebalance.', recoverable: false };
