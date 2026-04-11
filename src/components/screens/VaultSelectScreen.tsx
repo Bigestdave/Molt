@@ -5,7 +5,6 @@ import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
 import { SUPPORTED_CHAINS } from '../../constants/chains';
-import { CHAIN_NAMES } from '../../constants/chains';
 import { CHAIN_ICONS } from '../icons/ChainIcons';
 import { ConnectButton, useWalletState } from '../ui/ConnectButton';
 import type { NormalizedVault } from '../../store/appStore';
