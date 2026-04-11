@@ -158,7 +158,8 @@ export default function DashboardScreen() {
     <div className="min-h-[100dvh] flex flex-col" style={{ background: 'var(--yp-bg)' }}>
       {/* Nav — responsive */}
       <nav className="border-b border-[var(--yp-border)] bg-[var(--yp-glass-strong)] backdrop-blur-xl px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between z-20 relative">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2.5">
+          <img src="/logo-molt.png" alt="Agent Molt" className="h-7 w-7" />
           <span className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">Agent Molt</span>
           <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-70 hidden sm:inline">YIELDPET</span>
         </div>
