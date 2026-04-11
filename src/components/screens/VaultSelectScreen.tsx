@@ -455,16 +455,7 @@ export default function VaultSelectScreen() {
                 onClick={(e) => e.stopPropagation()}
                 className="bento-card p-6 sm:p-8 w-full max-w-[420px]"
               >
-                {/* Confirmed state */}
-                {isConfirmed ? (
-                  <div className="text-center py-4">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `rgba(${config.accentRgb}, 0.15)` }}>
-                      <CheckCircle2 size={28} style={{ color: config.accent }} />
-                    </div>
-                    <h3 className="font-display font-bold text-[18px] mb-2" style={{ color: config.accent }}>Deposit Confirmed!</h3>
-                    <p className="font-data text-[12px] text-[var(--yp-text-secondary)]">Your creature is hatching...</p>
-                  </div>
-                ) : isFailed ? (
+                {isFailed ? (
                   /* Failed state */
                   <div>
                     <div className="flex items-center justify-center mb-4">
