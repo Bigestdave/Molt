@@ -236,6 +236,10 @@ export async function getComposerQuote(params: {
   const res = await proxyFetch('/v1/quote', queryParams);
   if (!res.ok) {
     const err = await res.text();
+    const lower = err.toLowerCase();
+    if (lower.includes('insufficient') || lower.includes('not enough') || lower.includes('balance') || lower.includes('gas estimation')) {
+      throw new Error('Insufficient balance — you may not have enough tokens for this amount. Try a smaller deposit.');
+    }
     throw new Error(`Composer quote failed: ${err}`);
   }
   return res.json();
