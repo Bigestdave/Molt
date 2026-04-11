@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { parseUnits } from 'viem';
-import { RotateCcw, XCircle, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
+import { RotateCcw, XCircle, AlertTriangle, Loader2, CheckCircle2, ChevronDown } from 'lucide-react';
+import { useSwitchChain } from 'wagmi';
 import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
@@ -95,6 +96,22 @@ export default function VaultSelectScreen() {
 
   const [showConfirm, setShowConfirm] = useState(false);
   const { step, error, txHash, execute, reset: resetComposer } = useComposer();
+  const { switchChainAsync } = useSwitchChain();
+
+  // Source chain selector — defaults to wallet chain, user can change
+  const depositChains = SUPPORTED_CHAINS.filter(c => c.id !== 0 && USDC_ADDRESSES[c.id]);
+  const [sourceChainId, setSourceChainId] = useState<number>(walletChainId ?? 8453);
+  const [showChainPicker, setShowChainPicker] = useState(false);
+
+  // Update source chain when wallet chain changes (only if user hasn't manually picked)
+  const userPickedChain = useRef(false);
+  useEffect(() => {
+    if (walletChainId && !userPickedChain.current) {
+      setSourceChainId(walletChainId);
+    }
+  }, [walletChainId]);
+
+  const sourceChainName = SUPPORTED_CHAINS.find(c => c.id === sourceChainId)?.name ?? 'Unknown';
 
   const isTransacting = step !== 'idle' && step !== 'failed' && step !== 'confirmed';
   const isFailed = step === 'failed';
@@ -109,24 +126,40 @@ export default function VaultSelectScreen() {
       return;
     }
     resetComposer();
+    userPickedChain.current = false;
+    if (walletChainId) setSourceChainId(walletChainId);
     setShowConfirm(true);
   };
 
   const confirmAndSign = async () => {
-    if (!selectedVault || !address || !walletChainId) return;
+    if (!selectedVault || !address) return;
     const numAmount = parseFloat(amount);
-    // Use the wallet's current chain for fromChain — LI.FI handles cross-chain routing
-    const fromChainId = walletChainId;
-    const fromUsdcAddress = USDC_ADDRESSES[fromChainId];
+    const fromUsdcAddress = USDC_ADDRESSES[sourceChainId];
     if (!fromUsdcAddress) {
-      toast.error(`USDC not supported on your current network. Please switch to a supported chain.`);
+      toast.error('USDC not supported on selected source chain.');
       return;
     }
+
+    // If wallet isn't on the selected source chain, switch first
+    if (walletChainId !== sourceChainId) {
+      try {
+        await switchChainAsync({ chainId: sourceChainId });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Failed to switch';
+        if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('user denied')) {
+          toast.error('Network switch rejected. Please switch manually in your wallet.');
+        } else {
+          toast.error(`Could not switch to ${sourceChainName}: ${msg}`);
+        }
+        return;
+      }
+    }
+
     const fromAmount = parseUnits(String(numAmount), 6).toString();
 
     try {
       const hash = await execute({
-        fromChain: fromChainId,
+        fromChain: sourceChainId,
         toChain: selectedVault.chainId,
         fromToken: fromUsdcAddress,
         toToken: selectedVault.address,
@@ -134,13 +167,13 @@ export default function VaultSelectScreen() {
         fromAmount,
       });
 
-      // Success — save deposit and navigate to dashboard
+      // Success
       setWallet(address);
       setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: hash ?? '0xconfirmed' });
       setCreatureName(generateCreatureName(personality ?? undefined));
       addLogEntry({ message: 'Deposit confirmed on-chain. Creature hatched!', type: 'success' });
 
-      const explorer = CHAIN_EXPLORERS[fromChainId];
+      const explorer = CHAIN_EXPLORERS[sourceChainId];
       toast.success('Deposit confirmed!', {
         description: 'Your creature is hatching...',
         action: explorer && hash ? { label: 'View TX', onClick: () => window.open(`${explorer}${hash}`, '_blank') } : undefined,
@@ -151,7 +184,7 @@ export default function VaultSelectScreen() {
         setScreen('dashboard');
       }, 1500);
     } catch {
-      // Error state is handled by useComposer — modal stays open with error UI
+      // Error state handled by useComposer
     }
   };
 
@@ -161,9 +194,10 @@ export default function VaultSelectScreen() {
   };
 
   const handleCloseModal = () => {
-    if (isTransacting) return; // Don't close while transacting
+    if (isTransacting) return;
     resetComposer();
     setShowConfirm(false);
+    setShowChainPicker(false);
   };
 
   if (!config) return null;
@@ -507,17 +541,13 @@ export default function VaultSelectScreen() {
                   <>
                     <div className="meta-label mb-5 text-center">CONFIRM TRANSACTION</div>
 
-                    <div className="space-y-3 mb-6">
-                      <div className="flex justify-between font-data text-[12px]">
-                        <span className="text-[var(--yp-text-muted)]">Action</span>
-                        <span className="text-[var(--yp-text-secondary)]">Deposit into vault</span>
-                      </div>
+                    <div className="space-y-3 mb-5">
                       <div className="flex justify-between font-data text-[12px]">
                         <span className="text-[var(--yp-text-muted)]">Vault</span>
                         <span className="text-[var(--yp-text)] font-medium truncate ml-4 text-right">{selectedVault.name}</span>
                       </div>
                       <div className="flex justify-between font-data text-[12px]">
-                        <span className="text-[var(--yp-text-muted)]">Chain</span>
+                        <span className="text-[var(--yp-text-muted)]">Destination</span>
                         <span className="text-[var(--yp-text-secondary)]">{selectedVault.chainName}</span>
                       </div>
                       <div className="flex justify-between font-data text-[12px]">
@@ -539,8 +569,65 @@ export default function VaultSelectScreen() {
                       </div>
                     </div>
 
+                    {/* Source chain picker */}
+                    <div className="mb-5">
+                      <div className="font-data text-[9px] tracking-[0.12em] text-[var(--yp-text-muted)] mb-2">PAY FROM</div>
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowChainPicker(!showChainPicker)}
+                          className="w-full flex items-center justify-between gap-2 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-xl px-4 py-3 hover:border-[var(--yp-accent)] transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            {(() => {
+                              const Icon = CHAIN_ICONS[sourceChainId];
+                              return Icon ? <Icon size={16} /> : null;
+                            })()}
+                            <span className="font-data text-[13px] font-medium text-[var(--yp-text)]">{sourceChainName}</span>
+                            <span className="font-data text-[10px] text-[var(--yp-text-muted)]">USDC</span>
+                          </div>
+                          <ChevronDown size={14} className="text-[var(--yp-text-muted)]" />
+                        </button>
+                        <AnimatePresence>
+                          {showChainPicker && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              className="absolute top-full left-0 right-0 mt-1 bg-[var(--yp-surface)] border border-[var(--yp-border-hover)] rounded-xl overflow-hidden shadow-xl z-10"
+                            >
+                              {depositChains.map(c => {
+                                const Icon = CHAIN_ICONS[c.id];
+                                const isActive = c.id === sourceChainId;
+                                return (
+                                  <button
+                                    key={c.id}
+                                    onClick={() => {
+                                      setSourceChainId(c.id);
+                                      userPickedChain.current = true;
+                                      setShowChainPicker(false);
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-[var(--yp-surface-2)] transition-colors"
+                                    style={isActive ? { background: `rgba(${config.accentRgb}, 0.08)` } : {}}
+                                  >
+                                    {Icon && <Icon size={14} />}
+                                    <span className="font-data text-[12px]" style={isActive ? { color: config.accent } : {}}>{c.name}</span>
+                                    {isActive && <span className="ml-auto font-data text-[9px]" style={{ color: config.accent }}>✓</span>}
+                                  </button>
+                                );
+                              })}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      {sourceChainId !== walletChainId && (
+                        <div className="font-data text-[9px] text-amber-400/80 mt-1.5 leading-[1.5]">
+                          Your wallet will be switched to {sourceChainName} before signing.
+                        </div>
+                      )}
+                    </div>
+
                     <div className="font-data text-[10px] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] rounded-lg px-3 py-2.5 mb-5 leading-[1.6]">
-                      You will be asked to sign a transaction in your wallet. The transaction routes your USDC through LI.FI into the selected vault. No private keys leave your browser.
+                      Your USDC on {sourceChainName} will be routed via LI.FI into the vault{sourceChainId !== selectedVault.chainId ? ` on ${selectedVault.chainName}` : ''}. No private keys leave your browser.
                     </div>
 
                     <div className="flex gap-3">
