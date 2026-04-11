@@ -56,10 +56,16 @@ function WalletMenu() {
             <div className="font-data text-[11px] text-[var(--yp-text-secondary)]">{displayWallet}</div>
           </div>
           <button
-            onClick={() => { disconnect(); reset(); }}
-            className="w-full text-left px-4 py-3 font-data text-[11px] text-red-400 hover:bg-[var(--yp-surface-2)] transition-colors cursor-pointer"
+            onClick={() => { disconnect(); setOpen(false); }}
+            className="w-full text-left px-4 py-3 font-data text-[11px] text-[var(--yp-text-secondary)] hover:bg-[var(--yp-surface-2)] transition-colors cursor-pointer"
           >
-            Disconnect & Reset
+            Disconnect Wallet
+          </button>
+          <button
+            onClick={() => { disconnect(); reset(); setOpen(false); }}
+            className="w-full text-left px-4 py-3 font-data text-[11px] text-red-400 hover:bg-[var(--yp-surface-2)] transition-colors cursor-pointer border-t border-[var(--yp-border)]"
+          >
+            Reset & Start Over
           </button>
         </motion.div>
       )}
