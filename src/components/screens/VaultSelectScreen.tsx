@@ -114,21 +114,22 @@ export default function VaultSelectScreen() {
   };
 
   const confirmAndSign = async () => {
-    if (!selectedVault || !address) return;
+    if (!selectedVault || !address || !walletChainId) return;
     const numAmount = parseFloat(amount);
-    const chainId = selectedVault.chainId;
-    const usdcAddress = USDC_ADDRESSES[chainId];
-    if (!usdcAddress) {
-      toast.error('USDC not supported on this chain');
+    // Use the wallet's current chain for fromChain — LI.FI handles cross-chain routing
+    const fromChainId = walletChainId;
+    const fromUsdcAddress = USDC_ADDRESSES[fromChainId];
+    if (!fromUsdcAddress) {
+      toast.error(`USDC not supported on your current network. Please switch to a supported chain.`);
       return;
     }
     const fromAmount = parseUnits(String(numAmount), 6).toString();
 
     try {
       const hash = await execute({
-        fromChain: chainId,
-        toChain: chainId,
-        fromToken: usdcAddress,
+        fromChain: fromChainId,
+        toChain: selectedVault.chainId,
+        fromToken: fromUsdcAddress,
         toToken: selectedVault.address,
         fromAddress: address,
         fromAmount,
@@ -140,7 +141,7 @@ export default function VaultSelectScreen() {
       setCreatureName(generateCreatureName(personality ?? undefined));
       addLogEntry({ message: 'Deposit confirmed on-chain. Creature hatched!', type: 'success' });
 
-      const explorer = CHAIN_EXPLORERS[chainId];
+      const explorer = CHAIN_EXPLORERS[fromChainId];
       toast.success('Deposit confirmed!', {
         description: 'Your creature is hatching...',
         action: explorer && hash ? { label: 'View TX', onClick: () => window.open(`${explorer}${hash}`, '_blank') } : undefined,
