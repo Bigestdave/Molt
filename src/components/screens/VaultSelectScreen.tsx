@@ -36,6 +36,18 @@ export default function VaultSelectScreen() {
       .sort((a, b) => config.rankVault(b, maxApy) - config.rankVault(a, maxApy));
   }, [vaults, config]);
 
+  // Auto-recommend: select the top-ranked vault when vaults load (only once)
+  const hasAutoSelected = useRef(false);
+  useEffect(() => {
+    if (rankedVaults.length > 0 && !selectedVault && !hasAutoSelected.current) {
+      hasAutoSelected.current = true;
+      setSelectedVault(rankedVaults[0]);
+      toast.info(`${config?.name} recommends`, {
+        description: `${rankedVaults[0].name} — ${rankedVaults[0].apy.toFixed(2)}% APY on ${rankedVaults[0].chainName}`,
+      });
+    }
+  }, [rankedVaults, selectedVault, setSelectedVault, config]);
+
   const { address, isConnected } = useWalletState();
 
   const [showConfirm, setShowConfirm] = useState(false);
