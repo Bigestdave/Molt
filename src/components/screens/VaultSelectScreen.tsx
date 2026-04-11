@@ -257,6 +257,16 @@ export default function VaultSelectScreen() {
                 </p>
               </div>
 
+              {/* Chain mismatch warning */}
+              {isConnected && walletChainId && selectedVault.chainId !== walletChainId && (
+                <div className="rounded-xl p-3.5 border border-amber-500/30 bg-amber-500/[0.06] flex items-start gap-2.5">
+                  <span className="text-amber-400 mt-0.5 shrink-0 text-[14px]">⚠</span>
+                  <p className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-secondary)] leading-[1.6]">
+                    Your wallet is on <strong>{walletChainName}</strong> but this vault is on <strong>{selectedVault.chainName}</strong>. You'll be prompted to switch networks automatically.
+                  </p>
+                </div>
+              )}
+
               {/* Deposit section */}
               <div className="bento-card p-5 sm:p-7">
                 <div className="meta-label mb-4">DEPOSIT AMOUNT</div>
