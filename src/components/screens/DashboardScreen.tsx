@@ -93,6 +93,7 @@ export default function DashboardScreen() {
   const setEarnedUSD = useAppStore((s) => s.setEarnedUSD);
   const showRebalanceAlert = useAppStore((s) => s.showRebalanceAlert);
   const rebalanceTarget = useAppStore((s) => s.rebalanceTarget);
+  const rebalanceAnalysis = useAppStore((s) => s.rebalanceAnalysis);
   const setShowRebalanceAlert = useAppStore((s) => s.setShowRebalanceAlert);
   const setScreen = useAppStore((s) => s.setScreen);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
