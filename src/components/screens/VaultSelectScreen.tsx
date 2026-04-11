@@ -48,7 +48,8 @@ export default function VaultSelectScreen() {
     }
   }, [rankedVaults, selectedVault, setSelectedVault, config]);
 
-  const { address, isConnected } = useWalletState();
+  const { address, isConnected, chainId: walletChainId } = useWalletState();
+  const walletChainName = SUPPORTED_CHAINS.find(c => c.id === walletChainId)?.name ?? (walletChainId ? `Chain ${walletChainId}` : null);
 
   const [showConfirm, setShowConfirm] = useState(false);
 
