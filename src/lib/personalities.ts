@@ -17,6 +17,17 @@ export interface PersonalityConfig {
   creatureSpeed: number;
   voiceStyle: string[];
   rankingDescription: string;
+  rankVault: (vault: { apy: number; stabilityScore: number; tvlUsd?: number }, maxApy: number) => number;
+  icon: FC<AgentIconProps>;
+  accent: string;
+  accentRgb: string;
+  riskTag: string;
+  tagline: string;
+  description: string;
+  rebalanceLogic: string;
+  creatureSpeed: number;
+  voiceStyle: string[];
+  rankingDescription: string;
   rankVault: (vault: { apy: number; stabilityScore: number }, maxApy: number) => number;
   shouldRebalance: (current: { apy: number; stabilityScore: number; compositeScore?: number }, target: { apy: number; stabilityScore: number; compositeScore?: number }) => boolean;
   getInsight: (vaultName: string, apy: number, stabilityScore: number) => string;
