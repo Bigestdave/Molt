@@ -130,10 +130,11 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
     voiceStyle: sentinelMessages,
     rankingDescription: 'Risk-adjusted composite (APY × TVL stability)',
     rankVault: (vault) => {
-      // NEXUS: Sharpe-ratio style — APY multiplied by TVL stability. Finds the sweet spot.
+      // NEXUS: Sharpe-ratio style — caps APY at 30% to avoid outlier distortion, then multiplies by TVL stability
       const tvlUsd = vault.tvlUsd ?? 0;
       const stability = Math.min(tvlUsd / 50_000_000, 1.0);
-      return vault.apy * stability;
+      const cappedApy = Math.min(vault.apy, 30);
+      return cappedApy * stability;
     },
     shouldRebalance: (current, target) => {
       const currentScore = current.apy * current.stabilityScore;
