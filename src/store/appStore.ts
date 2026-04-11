@@ -62,6 +62,8 @@ export interface AppState {
   setRebalanceTarget: (v: NormalizedVault | null) => void;
   showRebalanceAlert: boolean;
   setShowRebalanceAlert: (show: boolean) => void;
+  rebalanceAnalysis: BreakevenAnalysis | null;
+  setRebalanceAnalysis: (a: BreakevenAnalysis | null) => void;
   usingCachedData: boolean;
   setUsingCachedData: (v: boolean) => void;
   reset: () => void;
@@ -82,6 +84,7 @@ const initialState = {
   rebalanceCount: 0,
   rebalanceTarget: null as NormalizedVault | null,
   showRebalanceAlert: false,
+  rebalanceAnalysis: null as BreakevenAnalysis | null,
   usingCachedData: false,
 };
 
@@ -113,6 +116,7 @@ export const useAppStore = create<AppState>()(
       incrementRebalance: () => set({ rebalanceCount: get().rebalanceCount + 1 }),
       setRebalanceTarget: (rebalanceTarget) => set({ rebalanceTarget }),
       setShowRebalanceAlert: (showRebalanceAlert) => set({ showRebalanceAlert }),
+      setRebalanceAnalysis: (rebalanceAnalysis) => set({ rebalanceAnalysis }),
       setUsingCachedData: (usingCachedData) => set({ usingCachedData }),
       reset: () => set(initialState),
     }),
