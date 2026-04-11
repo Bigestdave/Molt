@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Zap } from 'lucide-react';
+import { Zap, Clock, DollarSign, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
@@ -10,7 +10,10 @@ import { useWalletState } from '../ui/ConnectButton';
 import { useDisconnect } from 'wagmi';
 import { usePortfolio } from '../../hooks/usePortfolio';
 import { fetchVaultDetail } from '../../lib/lifi';
+import { formatBreakeven } from '../../lib/breakeven';
 import { CHAIN_EXPLORERS } from '../../constants/chains';
+import CreatureCanvas from '../creature/CreatureCanvas';
+import ApyChart from '../ui/ApyChart';
 import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
 
