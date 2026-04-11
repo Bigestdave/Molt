@@ -45,8 +45,8 @@ function categorizeError(error: string | null): { title: string; message: string
   if (lower.includes('network') || lower.includes('timeout') || lower.includes('fetch')) {
     return { title: 'Network Error', message: 'Could not reach the network. Check your connection.', recoverable: true };
   }
-  if (lower.includes('gas') || lower.includes('underpriced')) {
-    return { title: 'Gas Estimation Failed', message: 'The network may be congested — try again shortly.', recoverable: true };
+  if (lower.includes('gas') || lower.includes('underpriced') || lower.includes('gas estimation')) {
+    return { title: 'Insufficient Balance', message: "You likely don't have enough tokens for this amount. Try a smaller deposit that matches your wallet balance.", recoverable: true };
   }
   if (lower.includes('quote') || lower.includes('route')) {
     return { title: 'Route Not Found', message: 'Could not find a route. Try a different vault or amount.', recoverable: false };
