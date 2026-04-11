@@ -1,16 +1,57 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { parseUnits } from 'viem';
+import { RotateCcw, XCircle, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 import { useVaults } from '../../hooks/useVaults';
 import { getPersonality } from '../../lib/personalities';
-import { SUPPORTED_CHAINS } from '../../constants/chains';
+import { SUPPORTED_CHAINS, USDC_ADDRESSES, CHAIN_EXPLORERS } from '../../constants/chains';
 import { CHAIN_ICONS } from '../icons/ChainIcons';
 import { ConnectButton, useWalletState } from '../ui/ConnectButton';
+import { useComposer } from '../../hooks/useComposer';
+import { generateCreatureName } from '../../lib/creatureNames';
 import type { NormalizedVault } from '../../store/appStore';
 
 function ShimmerRow() {
   return <div className="shimmer h-[76px] rounded-[14px]" />;
+}
+
+const STEP_LABELS: Record<string, string> = {
+  idle: 'Preparing...',
+  switching: 'Switching network...',
+  quoting: 'Getting best route...',
+  signing: 'Approve in wallet...',
+  submitted: 'Transaction submitted...',
+  confirmed: 'Deposit confirmed!',
+  failed: '',
+};
+
+function categorizeError(error: string | null): { title: string; message: string; recoverable: boolean } {
+  if (!error) return { title: 'Unknown Error', message: 'Something went wrong. Please try again.', recoverable: true };
+  const lower = error.toLowerCase();
+  if (lower.includes('user rejected') || lower.includes('user denied') || lower.includes('rejected the request') || lower.includes('rejected the chain switch')) {
+    return { title: 'Transaction Rejected', message: 'You cancelled the transaction in your wallet. No funds were moved.', recoverable: true };
+  }
+  if (lower.includes('timed out')) {
+    return { title: 'Request Timed Out', message: error, recoverable: true };
+  }
+  if (lower.includes('chain switch') || lower.includes('does not match the target chain')) {
+    return { title: 'Wrong Network', message: 'Your wallet is on a different chain. Please allow the network switch when prompted.', recoverable: true };
+  }
+  if (lower.includes('insufficient') || lower.includes('exceeds balance') || lower.includes('not enough')) {
+    return { title: 'Insufficient Balance', message: "You don't have enough USDC for this deposit.", recoverable: false };
+  }
+  if (lower.includes('network') || lower.includes('timeout') || lower.includes('fetch')) {
+    return { title: 'Network Error', message: 'Could not reach the network. Check your connection.', recoverable: true };
+  }
+  if (lower.includes('gas') || lower.includes('underpriced')) {
+    return { title: 'Gas Estimation Failed', message: 'The network may be congested — try again shortly.', recoverable: true };
+  }
+  if (lower.includes('quote') || lower.includes('route')) {
+    return { title: 'Route Not Found', message: 'Could not find a route. Try a different vault or amount.', recoverable: false };
+  }
+  return { title: 'Transaction Failed', message: error.length > 120 ? error.slice(0, 120) + '…' : error, recoverable: true };
 }
 
 export default function VaultSelectScreen() {
@@ -21,6 +62,8 @@ export default function VaultSelectScreen() {
   const setSelectedVault = useAppStore((s) => s.setActiveVault);
   const usingCachedData = useAppStore((s) => s.usingCachedData);
   const setWallet = useAppStore((s) => s.setWallet);
+  const setCreatureName = useAppStore((s) => s.setCreatureName);
+  const addLogEntry = useAppStore((s) => s.addLogEntry);
 
   const [selectedChainId, setSelectedChainId] = useState<number>(0);
   const [amount, setAmount] = useState<string>('100');
@@ -52,6 +95,12 @@ export default function VaultSelectScreen() {
   const walletChainName = SUPPORTED_CHAINS.find(c => c.id === walletChainId)?.name ?? (walletChainId ? `Chain ${walletChainId}` : null);
 
   const [showConfirm, setShowConfirm] = useState(false);
+  const { step, error, txHash, execute, reset: resetComposer } = useComposer();
+
+  const isTransacting = step !== 'idle' && step !== 'failed' && step !== 'confirmed';
+  const isFailed = step === 'failed';
+  const isConfirmed = step === 'confirmed';
+  const errorInfo = categorizeError(error);
 
   const handleDeposit = () => {
     if (!selectedVault || !isConnected || !address) return;
@@ -60,16 +109,61 @@ export default function VaultSelectScreen() {
       toast.error('Enter a valid amount (minimum $1)');
       return;
     }
+    resetComposer();
     setShowConfirm(true);
   };
 
-  const confirmDeposit = () => {
+  const confirmAndSign = async () => {
     if (!selectedVault || !address) return;
     const numAmount = parseFloat(amount);
-    setWallet(address);
-    setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: '0xpending' });
+    const chainId = selectedVault.chainId;
+    const usdcAddress = USDC_ADDRESSES[chainId];
+    if (!usdcAddress) {
+      toast.error('USDC not supported on this chain');
+      return;
+    }
+    const fromAmount = parseUnits(String(numAmount), 6).toString();
+
+    try {
+      const hash = await execute({
+        fromChain: chainId,
+        toChain: chainId,
+        fromToken: usdcAddress,
+        toToken: selectedVault.address,
+        fromAddress: address,
+        fromAmount,
+      });
+
+      // Success — save deposit and navigate to dashboard
+      setWallet(address);
+      setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: hash ?? '0xconfirmed' });
+      setCreatureName(generateCreatureName(personality ?? undefined));
+      addLogEntry({ message: 'Deposit confirmed on-chain. Creature hatched!', type: 'success' });
+
+      const explorer = CHAIN_EXPLORERS[chainId];
+      toast.success('Deposit confirmed!', {
+        description: 'Your creature is hatching...',
+        action: explorer && hash ? { label: 'View TX', onClick: () => window.open(`${explorer}${hash}`, '_blank') } : undefined,
+      });
+
+      setTimeout(() => {
+        setShowConfirm(false);
+        setScreen('dashboard');
+      }, 1500);
+    } catch {
+      // Error state is handled by useComposer — modal stays open with error UI
+    }
+  };
+
+  const handleRetry = () => {
+    resetComposer();
+    confirmAndSign();
+  };
+
+  const handleCloseModal = () => {
+    if (isTransacting) return; // Don't close while transacting
+    resetComposer();
     setShowConfirm(false);
-    setScreen('hatch');
   };
 
   if (!config) return null;
@@ -80,10 +174,9 @@ export default function VaultSelectScreen() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col">
-      {/* Top nav — responsive */}
+      {/* Top nav */}
       <nav className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-b border-[var(--yp-border)] bg-[var(--yp-glass-strong)] backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-center gap-2.5">
-          
            <span className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">Molt</span>
            <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-50">YIELDPET</span>
         </div>
@@ -94,7 +187,6 @@ export default function VaultSelectScreen() {
             {config.riskTag.toUpperCase()}
           </span>
         </div>
-        {/* Mobile: show icon only */}
         <div className="flex sm:hidden items-center gap-2 bg-[var(--yp-surface-2)] border border-[var(--yp-border-hover)] rounded-full px-3 py-2">
           <config.icon size={16} color={config.accent} />
           <span className="font-data text-[9px] tracking-[0.1em]" style={{ color: config.accent }}>
@@ -128,11 +220,7 @@ export default function VaultSelectScreen() {
 
       <div className="flex-1 px-4 sm:px-8 py-8 sm:py-12 max-w-[900px] mx-auto w-full">
         {/* Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 sm:mb-10"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 sm:mb-10">
           <h2 className="font-display font-extrabold text-[32px] sm:text-[40px] tracking-[-0.04em] leading-[0.95] mb-2">
             Select a position
           </h2>
@@ -143,7 +231,7 @@ export default function VaultSelectScreen() {
           )}
         </motion.div>
 
-        {/* Chain filters — horizontal scroll on mobile */}
+        {/* Chain filters */}
         <div className="flex gap-2 mb-6 sm:mb-7 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
           {SUPPORTED_CHAINS.map(c => (
             <motion.button
@@ -175,19 +263,14 @@ export default function VaultSelectScreen() {
             }}
             onClick={() => setSelectedVault(rankedVaults[0])}
           >
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: `rgba(${config.accentRgb}, 0.15)` }}
-            >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `rgba(${config.accentRgb}, 0.15)` }}>
               <config.icon size={16} color={config.accent} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-data text-[9px] tracking-[0.12em] mb-0.5" style={{ color: config.accent }}>
                 {config.name.toUpperCase()} TOP PICK
               </div>
-              <div className="font-display font-bold text-[12px] sm:text-[13px] truncate">
-                {rankedVaults[0].name}
-              </div>
+              <div className="font-display font-bold text-[12px] sm:text-[13px] truncate">{rankedVaults[0].name}</div>
             </div>
             <div className="text-right shrink-0">
               <div className="font-data text-[14px] sm:text-[16px] font-medium" style={{ color: config.accent }}>
@@ -205,13 +288,9 @@ export default function VaultSelectScreen() {
               {[...Array(5)].map((_, i) => <ShimmerRow key={i} />)}
             </div>
           ) : isError ? (
-            <div className="text-center text-[var(--yp-text-muted)] py-10 bento-card">
-              Failed to load vaults.
-            </div>
+            <div className="text-center text-[var(--yp-text-muted)] py-10 bento-card">Failed to load vaults.</div>
           ) : rankedVaults.length === 0 ? (
-            <div className="text-center text-[var(--yp-text-muted)] py-10 bento-card">
-              No USDC vaults available.
-            </div>
+            <div className="text-center text-[var(--yp-text-muted)] py-10 bento-card">No USDC vaults available.</div>
           ) : (
             rankedVaults.map((vault, i) => (
               <VaultRowInline
@@ -327,7 +406,7 @@ export default function VaultSelectScreen() {
           )}
         </AnimatePresence>
 
-        {/* Transaction confirmation modal */}
+        {/* Transaction confirmation modal — now includes signing */}
         <AnimatePresence>
           {showConfirm && selectedVault && (
             <motion.div
@@ -335,7 +414,7 @@ export default function VaultSelectScreen() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-              onClick={() => setShowConfirm(false)}
+              onClick={handleCloseModal}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -344,61 +423,146 @@ export default function VaultSelectScreen() {
                 onClick={(e) => e.stopPropagation()}
                 className="bento-card p-6 sm:p-8 w-full max-w-[420px]"
               >
-                <div className="meta-label mb-5 text-center">CONFIRM TRANSACTION</div>
+                {/* Confirmed state */}
+                {isConfirmed ? (
+                  <div className="text-center py-4">
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `rgba(${config.accentRgb}, 0.15)` }}>
+                      <CheckCircle2 size={28} style={{ color: config.accent }} />
+                    </div>
+                    <h3 className="font-display font-bold text-[18px] mb-2" style={{ color: config.accent }}>Deposit Confirmed!</h3>
+                    <p className="font-data text-[12px] text-[var(--yp-text-secondary)]">Your creature is hatching...</p>
+                  </div>
+                ) : isFailed ? (
+                  /* Failed state */
+                  <div>
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center">
+                        <XCircle size={24} className="text-red-400" />
+                      </div>
+                    </div>
+                    <h3 className="font-display font-bold text-[16px] text-red-400 mb-2 text-center">{errorInfo.title}</h3>
+                    <p className="font-data text-[11px] text-[var(--yp-text-secondary)] leading-[1.7] text-center mb-5">
+                      {errorInfo.message}
+                    </p>
 
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between font-data text-[12px]">
-                    <span className="text-[var(--yp-text-muted)]">Action</span>
-                    <span className="text-[var(--yp-text-secondary)]">Deposit into vault</span>
-                  </div>
-                  <div className="flex justify-between font-data text-[12px]">
-                    <span className="text-[var(--yp-text-muted)]">Vault</span>
-                    <span className="text-[var(--yp-text)] font-medium truncate ml-4 text-right">{selectedVault.name}</span>
-                  </div>
-                  <div className="flex justify-between font-data text-[12px]">
-                    <span className="text-[var(--yp-text-muted)]">Chain</span>
-                    <span className="text-[var(--yp-text-secondary)]">{selectedVault.chainName}</span>
-                  </div>
-                  <div className="flex justify-between font-data text-[12px]">
-                    <span className="text-[var(--yp-text-muted)]">Protocol</span>
-                    <span className="text-[var(--yp-text-secondary)] capitalize">{selectedVault.protocol.replace('-', ' ')}</span>
-                  </div>
-                  <div className="h-px bg-[var(--yp-border)]" />
-                  <div className="flex justify-between font-data text-[14px]">
-                    <span className="text-[var(--yp-text-muted)]">Amount</span>
-                    <span style={{ color: config.accent }} className="font-medium">${parseFloat(amount).toFixed(2)} USDC</span>
-                  </div>
-                  <div className="flex justify-between font-data text-[12px]">
-                    <span className="text-[var(--yp-text-muted)]">Current APY</span>
-                    <span style={{ color: config.accent }}>{selectedVault.apy.toFixed(2)}%</span>
-                  </div>
-                  <div className="flex justify-between font-data text-[12px]">
-                    <span className="text-[var(--yp-text-muted)]">Est. Annual</span>
-                    <span className="text-[var(--yp-text-secondary)]">+${annualEarnings}</span>
-                  </div>
-                </div>
+                    <div className="flex gap-3">
+                      <motion.button
+                        onClick={handleCloseModal}
+                        className="btn-secondary flex-1 text-[13px]"
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Cancel
+                      </motion.button>
+                      {errorInfo.recoverable && (
+                        <motion.button
+                          onClick={handleRetry}
+                          className="flex-1 flex items-center justify-center gap-2 font-data text-[13px] px-4 py-3 rounded-xl font-medium"
+                          style={{ background: config.accent, color: '#000', borderRadius: '12px' }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <RotateCcw size={14} />
+                          Try Again
+                        </motion.button>
+                      )}
+                    </div>
 
-                <div className="font-data text-[10px] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] rounded-lg px-3 py-2.5 mb-5 leading-[1.6]">
-                  You will be asked to sign a transaction in your wallet. The transaction routes your USDC through LI.FI into the selected vault. No private keys leave your browser.
-                </div>
+                    <div className="flex items-start gap-2 mt-4 px-1">
+                      <AlertTriangle size={12} className="text-[var(--yp-text-muted)] mt-0.5 shrink-0" />
+                      <p className="font-data text-[9px] text-[var(--yp-text-muted)] leading-[1.6] text-left">
+                        No funds were deducted. You can safely retry or cancel.
+                      </p>
+                    </div>
+                  </div>
+                ) : isTransacting ? (
+                  /* In-progress signing state */
+                  <div className="text-center py-4">
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `rgba(${config.accentRgb}, 0.1)` }}>
+                      <Loader2 size={24} className="animate-spin" style={{ color: config.accent }} />
+                    </div>
+                    <h3 className="font-display font-bold text-[16px] mb-2">{STEP_LABELS[step]}</h3>
+                    <p className="font-data text-[11px] text-[var(--yp-text-muted)]">
+                      {step === 'switching' && 'Please confirm the network switch in your wallet.'}
+                      {step === 'quoting' && 'Finding the optimal route for your deposit...'}
+                      {step === 'signing' && 'Please approve the transaction in your wallet.'}
+                      {step === 'submitted' && 'Waiting for on-chain confirmation...'}
+                    </p>
+                    {txHash && (
+                      <div className="mt-3 font-data text-[10px] text-[var(--yp-text-muted)] truncate px-4">
+                        TX: {txHash}
+                      </div>
+                    )}
+                    {/* Progress bar */}
+                    <div className="h-0.5 bg-[var(--yp-surface-3)] rounded-full mt-5 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: config.accent, boxShadow: `0 0 8px ${config.accent}` }}
+                        animate={{
+                          width: step === 'switching' ? '15%' : step === 'quoting' ? '30%' : step === 'signing' ? '55%' : step === 'submitted' ? '80%' : '5%',
+                        }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  /* Initial confirm state */
+                  <>
+                    <div className="meta-label mb-5 text-center">CONFIRM TRANSACTION</div>
 
-                <div className="flex gap-3">
-                  <motion.button
-                    onClick={() => setShowConfirm(false)}
-                    className="btn-secondary flex-1 text-[13px]"
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    onClick={confirmDeposit}
-                    className="btn-primary flex-1 text-[13px]"
-                    style={{ background: config.accent, borderRadius: '12px' }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Confirm & Sign
-                  </motion.button>
-                </div>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between font-data text-[12px]">
+                        <span className="text-[var(--yp-text-muted)]">Action</span>
+                        <span className="text-[var(--yp-text-secondary)]">Deposit into vault</span>
+                      </div>
+                      <div className="flex justify-between font-data text-[12px]">
+                        <span className="text-[var(--yp-text-muted)]">Vault</span>
+                        <span className="text-[var(--yp-text)] font-medium truncate ml-4 text-right">{selectedVault.name}</span>
+                      </div>
+                      <div className="flex justify-between font-data text-[12px]">
+                        <span className="text-[var(--yp-text-muted)]">Chain</span>
+                        <span className="text-[var(--yp-text-secondary)]">{selectedVault.chainName}</span>
+                      </div>
+                      <div className="flex justify-between font-data text-[12px]">
+                        <span className="text-[var(--yp-text-muted)]">Protocol</span>
+                        <span className="text-[var(--yp-text-secondary)] capitalize">{selectedVault.protocol.replace('-', ' ')}</span>
+                      </div>
+                      <div className="h-px bg-[var(--yp-border)]" />
+                      <div className="flex justify-between font-data text-[14px]">
+                        <span className="text-[var(--yp-text-muted)]">Amount</span>
+                        <span style={{ color: config.accent }} className="font-medium">${parseFloat(amount).toFixed(2)} USDC</span>
+                      </div>
+                      <div className="flex justify-between font-data text-[12px]">
+                        <span className="text-[var(--yp-text-muted)]">Current APY</span>
+                        <span style={{ color: config.accent }}>{selectedVault.apy.toFixed(2)}%</span>
+                      </div>
+                      <div className="flex justify-between font-data text-[12px]">
+                        <span className="text-[var(--yp-text-muted)]">Est. Annual</span>
+                        <span className="text-[var(--yp-text-secondary)]">+${annualEarnings}</span>
+                      </div>
+                    </div>
+
+                    <div className="font-data text-[10px] text-[var(--yp-text-muted)] bg-[var(--yp-surface-2)] rounded-lg px-3 py-2.5 mb-5 leading-[1.6]">
+                      You will be asked to sign a transaction in your wallet. The transaction routes your USDC through LI.FI into the selected vault. No private keys leave your browser.
+                    </div>
+
+                    <div className="flex gap-3">
+                      <motion.button
+                        onClick={handleCloseModal}
+                        className="btn-secondary flex-1 text-[13px]"
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Cancel
+                      </motion.button>
+                      <motion.button
+                        onClick={confirmAndSign}
+                        className="btn-primary flex-1 text-[13px]"
+                        style={{ background: config.accent, borderRadius: '12px' }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Confirm & Sign
+                      </motion.button>
+                    </div>
+                  </>
+                )}
               </motion.div>
             </motion.div>
           )}
@@ -462,10 +626,7 @@ function VaultRowInline({
       </div>
 
       <div className="text-right shrink-0">
-        <div
-          className="font-data text-[20px] sm:text-[22px] font-medium tracking-[-0.02em] leading-none"
-          style={{ color: accent }}
-        >
+        <div className="font-data text-[20px] sm:text-[22px] font-medium tracking-[-0.02em] leading-none" style={{ color: accent }}>
           {vault.apy.toFixed(2)}%
         </div>
         <div className="font-data text-[8px] sm:text-[9px] tracking-[0.1em] text-[var(--yp-text-muted)] mt-1">APY</div>

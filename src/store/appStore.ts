@@ -127,6 +127,7 @@ export const useAppStore = create<AppState>()(
         agentLog: state.agentLog.slice(0, 20),
         earnedUSD: state.earnedUSD,
         rebalanceCount: state.rebalanceCount,
+        wallet: state.wallet,
         screen: state.deposit ? state.screen : 'personality',
       }),
     }

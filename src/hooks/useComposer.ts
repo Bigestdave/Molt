@@ -5,6 +5,15 @@ import type { Hex } from 'viem';
 
 export type ComposerStep = 'idle' | 'switching' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s. Please try again.`)), ms)
+    ),
+  ]);
+}
+
 export function useComposer() {
   const [step, setStep] = useState<ComposerStep>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -39,18 +48,29 @@ export function useComposer() {
       if (chain?.id !== params.fromChain) {
         setStep('switching');
         try {
-          await switchChainAsync({ chainId: params.fromChain });
+          await withTimeout(
+            switchChainAsync({ chainId: params.fromChain }),
+            30_000,
+            'Network switch'
+          );
         } catch (switchErr: unknown) {
           const msg = switchErr instanceof Error ? switchErr.message : 'Failed to switch chain';
           if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('user denied')) {
             throw new Error('You rejected the chain switch. Please switch your wallet to the correct network and try again.');
+          }
+          if (msg.toLowerCase().includes('timed out')) {
+            throw new Error(msg);
           }
           throw new Error(`Chain switch failed: ${msg}`);
         }
       }
 
       setStep('quoting');
-      const q = await getComposerQuote(params);
+      const q = await withTimeout(
+        getComposerQuote(params),
+        30_000,
+        'Route quote'
+      );
       setQuote(q);
 
       setStep('signing');
