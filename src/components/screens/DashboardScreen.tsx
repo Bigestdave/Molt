@@ -56,7 +56,11 @@ function WalletMenu() {
             <div className="font-data text-[11px] text-[var(--yp-text-secondary)]">{displayWallet}</div>
           </div>
           <button
-            onClick={() => { disconnect(); setOpen(false); }}
+            onClick={() => {
+              disconnect();
+              useAppStore.getState().setScreen('personality');
+              setOpen(false);
+            }}
             className="w-full text-left px-4 py-3 font-data text-[11px] text-[var(--yp-text-secondary)] hover:bg-[var(--yp-surface-2)] transition-colors cursor-pointer"
           >
             Disconnect Wallet
