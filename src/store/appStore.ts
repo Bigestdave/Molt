@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PersonalityType } from '../lib/personalities';
+import type { BreakevenAnalysis } from '../lib/breakeven';
 
 export interface NormalizedVault {
   id: string;
