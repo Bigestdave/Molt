@@ -1,17 +1,21 @@
 import { motion } from 'framer-motion';
+import { Clock, DollarSign, TrendingUp } from 'lucide-react';
 import type { NormalizedVault } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import type { PersonalityType } from '../../lib/personalities';
+import type { BreakevenAnalysis } from '../../lib/breakeven';
+import { formatBreakeven } from '../../lib/breakeven';
 
 interface RebalanceAlertProps {
   personality: PersonalityType;
   currentVault: NormalizedVault;
   targetVault: NormalizedVault;
+  analysis?: BreakevenAnalysis | null;
   onExecute: () => void;
   onDismiss: () => void;
 }
 
-export default function RebalanceAlert({ personality, currentVault, targetVault, onExecute, onDismiss }: RebalanceAlertProps) {
+export default function RebalanceAlert({ personality, currentVault, targetVault, analysis, onExecute, onDismiss }: RebalanceAlertProps) {
   const config = getPersonality(personality);
   if (!config) return null;
 
@@ -37,6 +41,53 @@ export default function RebalanceAlert({ personality, currentVault, targetVault,
         </div>
       </div>
 
+      {/* Break-even analysis */}
+      {analysis && (
+        <div className="bg-[var(--yp-surface)] rounded-2xl p-4 border border-[var(--yp-border)] mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-3">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <DollarSign size={10} className="text-[var(--yp-text-muted)]" />
+                <span className="meta-label text-[8px]">BRIDGE FEE</span>
+              </div>
+              <div className="font-data text-[14px] font-medium" style={{ color: config.accent }}>
+                ${analysis.bridgeFeeUsd.toFixed(2)}
+              </div>
+            </div>
+            <div className="text-center border-x border-[var(--yp-border)]">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Clock size={10} className="text-[var(--yp-text-muted)]" />
+                <span className="meta-label text-[8px]">BREAK-EVEN</span>
+              </div>
+              <div className="font-data text-[14px] font-medium" style={{ color: config.accent }}>
+                {formatBreakeven(analysis.breakEvenDays)}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <TrendingUp size={10} className="text-[var(--yp-text-muted)]" />
+                <span className="meta-label text-[8px]">APY DELTA</span>
+              </div>
+              <div className="font-data text-[14px] font-medium" style={{ color: config.accent }}>
+                +{analysis.apyDelta.toFixed(2)}%
+              </div>
+            </div>
+          </div>
+
+          {/* Agent reasoning */}
+          <div className="bg-[var(--yp-bg)] rounded-lg p-2.5 border border-[var(--yp-border)]">
+            <div className="flex items-center gap-1.5 mb-1">
+              <config.icon size={11} color={config.accent} />
+              <span className="meta-label text-[7px]" style={{ color: config.accent }}>{config.name.toUpperCase()} ANALYSIS</span>
+            </div>
+            <p className="font-data text-[10px] text-[var(--yp-text-secondary)] leading-[1.7] italic">
+              "{config.getBreakevenReasoning(analysis, targetVault.name)}"
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Current → Target */}
       <div className="bg-[var(--yp-surface)] rounded-2xl p-4 border border-[var(--yp-border)] mb-5">
         <div className="flex justify-between items-center mb-2">
           <div className="meta-label">Current</div>
@@ -57,7 +108,7 @@ export default function RebalanceAlert({ personality, currentVault, targetVault,
 
       <div className="flex gap-3">
         <motion.button onClick={onExecute} className="btn-primary flex-1 py-3 text-sm" style={{ background: config.accent }} whileTap={{ scale: 0.95 }}>
-          Execute Rebalance →
+          Execute One-Click Migration →
         </motion.button>
         <motion.button onClick={onDismiss} className="btn-secondary py-3 px-6 text-sm" whileTap={{ scale: 0.95 }}>
           Dismiss
