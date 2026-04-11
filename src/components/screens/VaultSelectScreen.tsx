@@ -96,6 +96,22 @@ export default function VaultSelectScreen() {
 
   const [showConfirm, setShowConfirm] = useState(false);
   const { step, error, txHash, execute, reset: resetComposer } = useComposer();
+  const { switchChainAsync } = useSwitchChain();
+
+  // Source chain selector — defaults to wallet chain, user can change
+  const depositChains = SUPPORTED_CHAINS.filter(c => c.id !== 0 && USDC_ADDRESSES[c.id]);
+  const [sourceChainId, setSourceChainId] = useState<number>(walletChainId ?? 8453);
+  const [showChainPicker, setShowChainPicker] = useState(false);
+
+  // Update source chain when wallet chain changes (only if user hasn't manually picked)
+  const userPickedChain = useRef(false);
+  useEffect(() => {
+    if (walletChainId && !userPickedChain.current) {
+      setSourceChainId(walletChainId);
+    }
+  }, [walletChainId]);
+
+  const sourceChainName = SUPPORTED_CHAINS.find(c => c.id === sourceChainId)?.name ?? 'Unknown';
 
   const isTransacting = step !== 'idle' && step !== 'failed' && step !== 'confirmed';
   const isFailed = step === 'failed';
@@ -110,24 +126,40 @@ export default function VaultSelectScreen() {
       return;
     }
     resetComposer();
+    userPickedChain.current = false;
+    if (walletChainId) setSourceChainId(walletChainId);
     setShowConfirm(true);
   };
 
   const confirmAndSign = async () => {
-    if (!selectedVault || !address || !walletChainId) return;
+    if (!selectedVault || !address) return;
     const numAmount = parseFloat(amount);
-    // Use the wallet's current chain for fromChain — LI.FI handles cross-chain routing
-    const fromChainId = walletChainId;
-    const fromUsdcAddress = USDC_ADDRESSES[fromChainId];
+    const fromUsdcAddress = USDC_ADDRESSES[sourceChainId];
     if (!fromUsdcAddress) {
-      toast.error(`USDC not supported on your current network. Please switch to a supported chain.`);
+      toast.error('USDC not supported on selected source chain.');
       return;
     }
+
+    // If wallet isn't on the selected source chain, switch first
+    if (walletChainId !== sourceChainId) {
+      try {
+        await switchChainAsync({ chainId: sourceChainId });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Failed to switch';
+        if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('user denied')) {
+          toast.error('Network switch rejected. Please switch manually in your wallet.');
+        } else {
+          toast.error(`Could not switch to ${sourceChainName}: ${msg}`);
+        }
+        return;
+      }
+    }
+
     const fromAmount = parseUnits(String(numAmount), 6).toString();
 
     try {
       const hash = await execute({
-        fromChain: fromChainId,
+        fromChain: sourceChainId,
         toChain: selectedVault.chainId,
         fromToken: fromUsdcAddress,
         toToken: selectedVault.address,
@@ -135,13 +167,13 @@ export default function VaultSelectScreen() {
         fromAmount,
       });
 
-      // Success — save deposit and navigate to dashboard
+      // Success
       setWallet(address);
       setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: hash ?? '0xconfirmed' });
       setCreatureName(generateCreatureName(personality ?? undefined));
       addLogEntry({ message: 'Deposit confirmed on-chain. Creature hatched!', type: 'success' });
 
-      const explorer = CHAIN_EXPLORERS[fromChainId];
+      const explorer = CHAIN_EXPLORERS[sourceChainId];
       toast.success('Deposit confirmed!', {
         description: 'Your creature is hatching...',
         action: explorer && hash ? { label: 'View TX', onClick: () => window.open(`${explorer}${hash}`, '_blank') } : undefined,
@@ -152,7 +184,7 @@ export default function VaultSelectScreen() {
         setScreen('dashboard');
       }, 1500);
     } catch {
-      // Error state is handled by useComposer — modal stays open with error UI
+      // Error state handled by useComposer
     }
   };
 
@@ -162,9 +194,10 @@ export default function VaultSelectScreen() {
   };
 
   const handleCloseModal = () => {
-    if (isTransacting) return; // Don't close while transacting
+    if (isTransacting) return;
     resetComposer();
     setShowConfirm(false);
+    setShowChainPicker(false);
   };
 
   if (!config) return null;
