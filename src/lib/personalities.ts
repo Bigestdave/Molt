@@ -89,6 +89,12 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
     },
     getRebalanceMessage: (currentApy, targetApy, targetName) =>
       `A steadier position has emerged. ${targetName} offers ${targetApy.toFixed(2)}% APY with stronger stability — up from your current ${currentApy.toFixed(2)}%. I recommend we move.`,
+    getBreakevenReasoning: (analysis, targetName) => {
+      if (!analysis.profitable) return `Bridge fee of $${analysis.bridgeFeeUsd.toFixed(2)} to reach ${targetName} is too high relative to the yield gain. The math doesn't justify the risk. Holding.`;
+      if (analysis.breakEvenDays > 30) return `Bridge cost: $${analysis.bridgeFeeUsd.toFixed(2)}. Break-even in ${Math.ceil(analysis.breakEvenDays)} days. That's longer than I'd prefer, but the stability improvement justifies a cautious move.`;
+      return `Bridge cost: $${analysis.bridgeFeeUsd.toFixed(2)}. You'll recover that in ${Math.ceil(analysis.breakEvenDays)} days from the extra +${analysis.apyDelta.toFixed(2)}% APY. A safe, calculated move.`;
+    },
+    shouldRebalanceWithFees: (analysis) => analysis.profitable && analysis.breakEvenDays < 60,
     getIdleMessages: () => stewardMessages,
   },
 
@@ -115,6 +121,12 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
     },
     getRebalanceMessage: (currentApy, targetApy, targetName) =>
       `Better yield found. ${targetName} is offering ${targetApy.toFixed(2)}% — that's ${(targetApy / currentApy).toFixed(1)}× your current ${currentApy.toFixed(2)}%. Moving.`,
+    getBreakevenReasoning: (analysis, targetName) => {
+      if (analysis.breakEvenDays < 3) return `Bridge fee: $${analysis.bridgeFeeUsd.toFixed(2)}. Break-even in ${Math.ceil(analysis.breakEvenDays * 24)} hours. This is a kill shot. Let's move to ${targetName}.`;
+      if (analysis.breakEvenDays < 14) return `$${analysis.bridgeFeeUsd.toFixed(2)} bridge cost. Recovered in ${Math.ceil(analysis.breakEvenDays)} days. The +${analysis.apyDelta.toFixed(2)}% edge is worth the friction.`;
+      return `Bridge fee is $${analysis.bridgeFeeUsd.toFixed(2)}. Takes ${Math.ceil(analysis.breakEvenDays)} days to break even. Marginal, but I never leave yield on the table.`;
+    },
+    shouldRebalanceWithFees: (analysis) => analysis.breakEvenDays < 30,
     getIdleMessages: () => hunterMessages,
   },
 
@@ -149,6 +161,12 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
     },
     getRebalanceMessage: (_currentApy, targetApy, targetName) =>
       `Composite score analysis complete. ${targetName} scores higher on risk-adjusted metrics — ${targetApy.toFixed(2)}% APY with improved stability. Recommending move.`,
+    getBreakevenReasoning: (analysis, targetName) => {
+      const roi = analysis.dailyExtra ? ((analysis.dailyExtra * 365) / analysis.bridgeFeeUsd * 100).toFixed(0) : '0';
+      if (!analysis.profitable) return `Cost analysis: Bridge fee $${analysis.bridgeFeeUsd.toFixed(2)} exceeds projected yield delta. ROI: negative. Move to ${targetName} rejected.`;
+      return `Fee analysis: $${analysis.bridgeFeeUsd.toFixed(2)} bridge cost. Break-even: ${Math.ceil(analysis.breakEvenDays)} days. Annualized ROI on fee: ${roi}%. ${analysis.breakEvenDays < 14 ? 'Optimal.' : 'Acceptable.'} Recommending execution.`;
+    },
+    shouldRebalanceWithFees: (analysis) => analysis.profitable && analysis.breakEvenDays < 45,
     getIdleMessages: () => sentinelMessages,
   },
 };
