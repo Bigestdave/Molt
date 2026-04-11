@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useSendTransaction, useWaitForTransactionReceipt, useSwitchChain, useAccount } from 'wagmi';
 import { getComposerQuote, type ComposerQuote } from '../lib/lifi';
 import type { Hex } from 'viem';
 
-export type ComposerStep = 'idle' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
+export type ComposerStep = 'idle' | 'switching' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
 
 export function useComposer() {
   const [step, setStep] = useState<ComposerStep>('idle');
@@ -11,7 +11,9 @@ export function useComposer() {
   const [txHash, setTxHash] = useState<Hex | null>(null);
   const [quote, setQuote] = useState<ComposerQuote | null>(null);
 
+  const { chain } = useAccount();
   const { sendTransactionAsync } = useSendTransaction();
+  const { switchChainAsync } = useSwitchChain();
   const { data: receipt, isLoading: isWaitingReceipt } = useWaitForTransactionReceipt({
     hash: txHash ?? undefined,
   });
@@ -30,10 +32,24 @@ export function useComposer() {
     fromAmount: string;
   }) => {
     try {
-      setStep('quoting');
       setError(null);
       setTxHash(null);
 
+      // Auto-switch chain if wallet is on wrong network
+      if (chain?.id !== params.fromChain) {
+        setStep('switching');
+        try {
+          await switchChainAsync({ chainId: params.fromChain });
+        } catch (switchErr: unknown) {
+          const msg = switchErr instanceof Error ? switchErr.message : 'Failed to switch chain';
+          if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('user denied')) {
+            throw new Error('You rejected the chain switch. Please switch your wallet to the correct network and try again.');
+          }
+          throw new Error(`Chain switch failed: ${msg}`);
+        }
+      }
+
+      setStep('quoting');
       const q = await getComposerQuote(params);
       setQuote(q);
 
@@ -54,7 +70,7 @@ export function useComposer() {
       setStep('failed');
       throw err;
     }
-  }, [sendTransactionAsync]);
+  }, [sendTransactionAsync, switchChainAsync, chain?.id]);
 
   const reset = useCallback(() => {
     setStep('idle');

@@ -13,6 +13,7 @@ import { generateCreatureName } from '../../lib/creatureNames';
 
 const STEP_LABELS: Record<string, string> = {
   idle: 'Preparing...',
+  switching: 'Switching network...',
   quoting: 'Getting best route...',
   signing: 'Approve in wallet...',
   submitted: 'Transaction submitted...',
@@ -23,6 +24,7 @@ const STEP_LABELS: Record<string, string> = {
 function stepToProgress(step: string): number {
   switch (step) {
     case 'idle': return 0.05;
+    case 'switching': return 0.1;
     case 'quoting': return 0.2;
     case 'signing': return 0.45;
     case 'submitted': return 0.7;
@@ -35,8 +37,11 @@ function stepToProgress(step: string): number {
 function categorizeError(error: string | null): { title: string; message: string; recoverable: boolean } {
   if (!error) return { title: 'Unknown Error', message: 'Something went wrong. Please try again.', recoverable: true };
   const lower = error.toLowerCase();
-  if (lower.includes('user rejected') || lower.includes('user denied') || lower.includes('rejected the request')) {
+  if (lower.includes('user rejected') || lower.includes('user denied') || lower.includes('rejected the request') || lower.includes('rejected the chain switch')) {
     return { title: 'Transaction Rejected', message: 'You cancelled the transaction in your wallet. No funds were moved.', recoverable: true };
+  }
+  if (lower.includes('chain switch') || lower.includes('does not match the target chain')) {
+    return { title: 'Wrong Network', message: 'Your wallet is on a different chain than the vault. Please allow the network switch when prompted, or manually switch in your wallet.', recoverable: true };
   }
   if (lower.includes('insufficient') || lower.includes('exceeds balance') || lower.includes('not enough')) {
     return { title: 'Insufficient Balance', message: 'You don\'t have enough USDC in your wallet for this deposit. Check your balance and try a smaller amount.', recoverable: false };
