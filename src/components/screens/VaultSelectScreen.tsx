@@ -482,7 +482,6 @@ export default function VaultSelectScreen() {
                     </div>
                     <h3 className="font-display font-bold text-[16px] mb-2">{STEP_LABELS[step]}</h3>
                     <p className="font-data text-[11px] text-[var(--yp-text-muted)]">
-                      {step === 'switching' && 'Please confirm the network switch in your wallet.'}
                       {step === 'quoting' && 'Finding the optimal route for your deposit...'}
                       {step === 'signing' && 'Please approve the transaction in your wallet.'}
                       {step === 'submitted' && 'Waiting for on-chain confirmation...'}
@@ -498,7 +497,7 @@ export default function VaultSelectScreen() {
                         className="h-full rounded-full"
                         style={{ background: config.accent, boxShadow: `0 0 8px ${config.accent}` }}
                         animate={{
-                          width: step === 'switching' ? '15%' : step === 'quoting' ? '30%' : step === 'signing' ? '55%' : step === 'submitted' ? '80%' : '5%',
+                          width: step === 'quoting' ? '30%' : step === 'signing' ? '55%' : step === 'submitted' ? '80%' : '5%',
                         }}
                         transition={{ duration: 0.8, ease: 'easeOut' }}
                       />
