@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Zap } from 'lucide-react';
+import { Zap, Clock, DollarSign, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
@@ -10,6 +10,7 @@ import { useWalletState } from '../ui/ConnectButton';
 import { useDisconnect } from 'wagmi';
 import { usePortfolio } from '../../hooks/usePortfolio';
 import { fetchVaultDetail } from '../../lib/lifi';
+import { formatBreakeven } from '../../lib/breakeven';
 import { CHAIN_EXPLORERS } from '../../constants/chains';
 import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
@@ -92,6 +93,7 @@ export default function DashboardScreen() {
   const setEarnedUSD = useAppStore((s) => s.setEarnedUSD);
   const showRebalanceAlert = useAppStore((s) => s.showRebalanceAlert);
   const rebalanceTarget = useAppStore((s) => s.rebalanceTarget);
+  const rebalanceAnalysis = useAppStore((s) => s.rebalanceAnalysis);
   const setShowRebalanceAlert = useAppStore((s) => s.setShowRebalanceAlert);
   const setScreen = useAppStore((s) => s.setScreen);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
@@ -295,7 +297,7 @@ export default function DashboardScreen() {
 
         {/* ═══════ RIGHT: DATA PANEL ═══════ */}
         <div className="overflow-y-auto custom-scrollbar p-4 sm:p-7 flex flex-col gap-4 sm:gap-6">
-          {/* Rebalance alert */}
+          {/* Rebalance alert with AI reasoning */}
           {showRebalanceAlert && rebalanceTarget && (
             <motion.div {...fadeUp()}>
               <div
@@ -316,16 +318,72 @@ export default function DashboardScreen() {
                     DISMISS
                   </button>
                 </div>
-                <p className="font-data text-[11px] sm:text-[12px] text-[var(--yp-text-secondary)] leading-[1.7] mb-3 sm:mb-4">
-                  {config.getRebalanceMessage(activeVault.apy, rebalanceTarget.apy, rebalanceTarget.name)}
+
+                {/* Agent reasoning message */}
+                <p className="font-data text-[11px] sm:text-[12px] text-[var(--yp-text-secondary)] leading-[1.7] mb-3">
+                  "{config.getRebalanceMessage(activeVault.apy, rebalanceTarget.apy, rebalanceTarget.name)}"
                 </p>
+
+                {/* Break-even analysis card */}
+                {rebalanceAnalysis && (
+                  <div className="bg-[var(--yp-surface)] rounded-xl p-3 sm:p-3.5 border border-[var(--yp-border)] mb-3 sm:mb-4">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <DollarSign size={10} className="text-[var(--yp-text-muted)]" />
+                          <span className="meta-label text-[7px] sm:text-[8px]">BRIDGE FEE</span>
+                        </div>
+                        <div className="font-data text-[13px] sm:text-[15px] font-medium" style={{ color: config.accent }}>
+                          ${rebalanceAnalysis.bridgeFeeUsd.toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="text-center border-x border-[var(--yp-border)]">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Clock size={10} className="text-[var(--yp-text-muted)]" />
+                          <span className="meta-label text-[7px] sm:text-[8px]">BREAK-EVEN</span>
+                        </div>
+                        <div className="font-data text-[13px] sm:text-[15px] font-medium" style={{ color: config.accent }}>
+                          {formatBreakeven(rebalanceAnalysis.breakEvenDays)}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <TrendingUp size={10} className="text-[var(--yp-text-muted)]" />
+                          <span className="meta-label text-[7px] sm:text-[8px]">APY DELTA</span>
+                        </div>
+                        <div className="font-data text-[13px] sm:text-[15px] font-medium" style={{ color: config.accent }}>
+                          +{rebalanceAnalysis.apyDelta.toFixed(2)}%
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Personality-specific fee reasoning */}
+                    <div className="bg-[var(--yp-bg)] rounded-lg p-2.5 sm:p-3 border border-[var(--yp-border)]">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <config.icon size={12} color={config.accent} />
+                        <span className="meta-label text-[7px] sm:text-[8px]" style={{ color: config.accent }}>{config.name.toUpperCase()} ANALYSIS</span>
+                      </div>
+                      <p className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-secondary)] leading-[1.7] italic">
+                        "{config.getBreakevenReasoning(rebalanceAnalysis, rebalanceTarget.name)}"
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* APY comparison */}
+                <div className="flex items-center justify-between font-data text-[10px] sm:text-[11px] text-[var(--yp-text-muted)] mb-3 sm:mb-4 px-1">
+                  <span>{activeVault.apy.toFixed(2)}% APY</span>
+                  <span className="text-[var(--yp-text-muted)]">→</span>
+                  <span style={{ color: config.accent }}>{rebalanceTarget.apy.toFixed(2)}% APY</span>
+                </div>
+
                 <motion.button
                   onClick={() => { setShowRebalanceAlert(false); setScreen('rebalance'); }}
-                  className="btn-primary text-[12px] sm:text-[13px] py-2.5 px-5 sm:px-6"
+                  className="btn-primary text-[12px] sm:text-[13px] py-2.5 px-5 sm:px-6 w-full"
                   style={{ background: config.accent, borderRadius: 8 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  Execute Rebalance →
+                  Execute One-Click Migration →
                 </motion.button>
               </div>
             </motion.div>
