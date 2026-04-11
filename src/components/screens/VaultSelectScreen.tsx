@@ -48,7 +48,8 @@ export default function VaultSelectScreen() {
     }
   }, [rankedVaults, selectedVault, setSelectedVault, config]);
 
-  const { address, isConnected } = useWalletState();
+  const { address, isConnected, chainId: walletChainId } = useWalletState();
+  const walletChainName = SUPPORTED_CHAINS.find(c => c.id === walletChainId)?.name ?? (walletChainId ? `Chain ${walletChainId}` : null);
 
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -100,14 +101,29 @@ export default function VaultSelectScreen() {
             {config.riskTag.toUpperCase()}
           </span>
         </div>
-        <motion.button
-          onClick={() => setScreen('personality')}
-          className="btn-secondary text-[13px] px-3 sm:px-5"
-          whileTap={{ scale: 0.95 }}
-        >
-          <span className="sm:hidden">←</span>
-          <span className="hidden sm:inline">← Back</span>
-        </motion.button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {isConnected && walletChainName && (
+            <div className="flex items-center gap-1.5 font-data text-[9px] sm:text-[10px] tracking-[0.08em] text-[var(--yp-text-secondary)] bg-[var(--yp-surface-2)] border border-[var(--yp-border)] rounded-full px-2.5 py-1.5">
+              {(() => {
+                const ChainIcon = CHAIN_ICONS[walletChainId ?? 0];
+                return ChainIcon ? <ChainIcon size={12} /> : null;
+              })()}
+              <span className="hidden sm:inline">{walletChainName}</span>
+              <span
+                className="w-[5px] h-[5px] rounded-full shrink-0"
+                style={{ background: config.accent, boxShadow: `0 0 6px ${config.accent}` }}
+              />
+            </div>
+          )}
+          <motion.button
+            onClick={() => setScreen('personality')}
+            className="btn-secondary text-[13px] px-3 sm:px-5"
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="sm:hidden">←</span>
+            <span className="hidden sm:inline">← Back</span>
+          </motion.button>
+        </div>
       </nav>
 
       <div className="flex-1 px-4 sm:px-8 py-8 sm:py-12 max-w-[900px] mx-auto w-full">
@@ -240,6 +256,16 @@ export default function VaultSelectScreen() {
                   {config.getInsight(selectedVault.name, selectedVault.apy, selectedVault.stabilityScore)}
                 </p>
               </div>
+
+              {/* Chain mismatch warning */}
+              {isConnected && walletChainId && selectedVault.chainId !== walletChainId && (
+                <div className="rounded-xl p-3.5 border border-amber-500/30 bg-amber-500/[0.06] flex items-start gap-2.5">
+                  <span className="text-amber-400 mt-0.5 shrink-0 text-[14px]">⚠</span>
+                  <p className="font-data text-[10px] sm:text-[11px] text-[var(--yp-text-secondary)] leading-[1.6]">
+                    Your wallet is on <strong>{walletChainName}</strong> but this vault is on <strong>{selectedVault.chainName}</strong>. You'll be prompted to switch networks automatically.
+                  </p>
+                </div>
+              )}
 
               {/* Deposit section */}
               <div className="bento-card p-5 sm:p-7">
