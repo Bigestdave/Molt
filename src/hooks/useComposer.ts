@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { useSendTransaction, useWaitForTransactionReceipt, useSwitchChain, useAccount } from 'wagmi';
+import { useSendTransaction, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { getComposerQuote, type ComposerQuote } from '../lib/lifi';
 import type { Hex } from 'viem';
 
-export type ComposerStep = 'idle' | 'switching' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
+export type ComposerStep = 'idle' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -22,7 +22,6 @@ export function useComposer() {
 
   const { chain } = useAccount();
   const { sendTransactionAsync } = useSendTransaction();
-  const { switchChainAsync } = useSwitchChain();
   const { data: receipt, isLoading: isWaitingReceipt } = useWaitForTransactionReceipt({
     hash: txHash ?? undefined,
   });
@@ -44,25 +43,11 @@ export function useComposer() {
       setError(null);
       setTxHash(null);
 
-      // Auto-switch chain if wallet is on wrong network
+      // Verify wallet is on the expected source chain
       if (chain?.id !== params.fromChain) {
-        setStep('switching');
-        try {
-          await withTimeout(
-            switchChainAsync({ chainId: params.fromChain }),
-            30_000,
-            'Network switch'
-          );
-        } catch (switchErr: unknown) {
-          const msg = switchErr instanceof Error ? switchErr.message : 'Failed to switch chain';
-          if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('user denied')) {
-            throw new Error('You rejected the chain switch. Please switch your wallet to the correct network and try again.');
-          }
-          if (msg.toLowerCase().includes('timed out')) {
-            throw new Error(msg);
-          }
-          throw new Error(`Chain switch failed: ${msg}`);
-        }
+        throw new Error(
+          `Your wallet is on the wrong network. Please switch to the correct chain in your wallet and try again.`
+        );
       }
 
       setStep('quoting');
@@ -78,7 +63,7 @@ export function useComposer() {
         to: q.transactionRequest.to as Hex,
         data: q.transactionRequest.data as Hex,
         value: BigInt(q.transactionRequest.value || '0'),
-        chainId: q.transactionRequest.chainId,
+        chainId: params.fromChain,
       });
 
       setTxHash(hash);
@@ -90,7 +75,7 @@ export function useComposer() {
       setStep('failed');
       throw err;
     }
-  }, [sendTransactionAsync, switchChainAsync, chain?.id]);
+  }, [sendTransactionAsync, chain?.id]);
 
   const reset = useCallback(() => {
     setStep('idle');
