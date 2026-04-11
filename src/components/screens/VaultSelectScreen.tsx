@@ -19,7 +19,6 @@ function ShimmerRow() {
 
 const STEP_LABELS: Record<string, string> = {
   idle: 'Preparing...',
-  switching: 'Switching network...',
   quoting: 'Getting best route...',
   signing: 'Approve in wallet...',
   submitted: 'Transaction submitted...',
