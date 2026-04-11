@@ -146,6 +146,42 @@ export default function VaultSelectScreen() {
           ))}
         </div>
 
+        {/* Agent top pick banner */}
+        {rankedVaults.length > 0 && config && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-xl p-3.5 sm:p-4 mb-4 border flex items-center gap-3 cursor-pointer"
+            style={{
+              borderColor: `rgba(${config.accentRgb}, 0.35)`,
+              background: `rgba(${config.accentRgb}, 0.05)`,
+            }}
+            onClick={() => setSelectedVault(rankedVaults[0])}
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: `rgba(${config.accentRgb}, 0.15)` }}
+            >
+              <config.icon size={16} color={config.accent} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-data text-[9px] tracking-[0.12em] mb-0.5" style={{ color: config.accent }}>
+                {config.name.toUpperCase()} TOP PICK
+              </div>
+              <div className="font-display font-bold text-[12px] sm:text-[13px] truncate">
+                {rankedVaults[0].name}
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="font-data text-[14px] sm:text-[16px] font-medium" style={{ color: config.accent }}>
+                {rankedVaults[0].apy.toFixed(2)}%
+              </div>
+              <div className="font-data text-[9px] text-[var(--yp-text-muted)]">{rankedVaults[0].chainName}</div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Vault list */}
         <div className="flex flex-col gap-1.5 mb-5">
           {isLoading ? (
