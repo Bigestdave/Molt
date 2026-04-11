@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAccount } from 'wagmi';
+import { toast } from 'sonner';
 import { useAppStore } from './store/appStore';
 import { personalities } from './lib/personalities';
 import PersonalityScreen from './components/screens/PersonalityScreen';
@@ -14,8 +16,47 @@ const screenVariants = {
   exit: { opacity: 0, scale: 0.98, y: -12, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } },
 };
 
+function useSessionRestore() {
+  const { address, isConnected } = useAccount();
+  const deposit = useAppStore((s) => s.deposit);
+  const activeVault = useAppStore((s) => s.activeVault);
+  const personality = useAppStore((s) => s.personality);
+  const wallet = useAppStore((s) => s.wallet);
+  const screen = useAppStore((s) => s.screen);
+  const setScreen = useAppStore((s) => s.setScreen);
+  const setWallet = useAppStore((s) => s.setWallet);
+  const [restored, setRestored] = useState(false);
+
+  useEffect(() => {
+    if (restored) return;
+
+    // If wallet reconnects and we have a persisted session with deposit data
+    if (isConnected && address && deposit && activeVault && personality) {
+      // Wallet matches or we allow any reconnect (user may have same wallet)
+      const walletMatches = !wallet || wallet.toLowerCase() === address.toLowerCase();
+      if (walletMatches) {
+        setWallet(address);
+        // If they were on personality or vaultSelect but have a deposit, go to dashboard
+        if (screen === 'personality' || screen === 'vaultSelect' || screen === 'hatch') {
+          setScreen('dashboard');
+          toast.success('Welcome back!', { description: 'Your session has been restored.' });
+        }
+        setRestored(true);
+        return;
+      }
+    }
+
+    // If connected but no deposit, just mark as restored
+    if (isConnected) {
+      setRestored(true);
+    }
+  }, [isConnected, address, deposit, activeVault, personality, wallet, screen, setScreen, setWallet, restored]);
+}
+
 function ScreenManager() {
   const screen = useAppStore((s) => s.screen);
+  useSessionRestore();
+
   const screens: Record<string, JSX.Element> = {
     personality: <PersonalityScreen />,
     vaultSelect: <VaultSelectScreen />,
