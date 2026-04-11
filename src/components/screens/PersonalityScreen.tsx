@@ -65,7 +65,7 @@ export default function PersonalityScreen() {
               }}
             />
             <span className="font-data text-[10px] tracking-[0.15em] text-[var(--yp-text-secondary)]">
-              MOLT — AUTONOMOUS DEFI AGENT
+              AGENT MOLT — AUTONOMOUS DEFI AGENT
             </span>
           </div>
         </motion.div>
