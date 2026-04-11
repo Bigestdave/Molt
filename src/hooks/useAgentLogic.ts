@@ -2,6 +2,8 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAppStore } from '../store/appStore';
 import { getPersonality } from '../lib/personalities';
 import type { NormalizedVault } from '../store/appStore';
+import { getBridgeQuote } from '../lib/bridgeQuote';
+import { calculateBreakeven } from '../lib/breakeven';
 
 export function useAgentLogic() {
   const personality = useAppStore((s) => s.personality);
@@ -10,6 +12,7 @@ export function useAgentLogic() {
   const addLogEntry = useAppStore((s) => s.addLogEntry);
   const setRebalanceTarget = useAppStore((s) => s.setRebalanceTarget);
   const setShowRebalanceAlert = useAppStore((s) => s.setShowRebalanceAlert);
+  const setRebalanceAnalysis = useAppStore((s) => s.setRebalanceAnalysis);
   const deposit = useAppStore((s) => s.deposit);
   const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
   const screen = useAppStore((s) => s.screen);
@@ -18,9 +21,7 @@ export function useAgentLogic() {
   const lastIdleRef = useRef(0);
   const lastCheckRef = useRef(0);
 
-  // APY polling is now handled in DashboardScreen via fetchVaultDetail
-
-  const checkRebalance = useCallback(() => {
+  const checkRebalance = useCallback(async () => {
     if (!config || !activeVault || !deposit || allVaults.length === 0) return;
     const maxApy = Math.max(...allVaults.map(v => v.apy), 1);
     const ranked = allVaults
@@ -29,15 +30,30 @@ export function useAgentLogic() {
       .sort((a, b) => b.score - a.score);
     if (ranked.length === 0) return;
     const best = ranked[0];
-    if (config.shouldRebalance(activeVault, best.vault)) {
-      setRebalanceTarget(best.vault);
-      setShowRebalanceAlert(true);
-      addLogEntry({
-        message: config.getRebalanceMessage(activeVault.apy, best.vault.apy, best.vault.name),
-        type: 'action',
-      });
+
+    if (!config.shouldRebalance(activeVault, best.vault)) return;
+
+    // Fetch bridge quote for break-even analysis
+    addLogEntry({ message: 'Analyzing bridge costs and break-even time...', type: 'info' });
+
+    const quote = await getBridgeQuote(activeVault.chainId, best.vault.chainId, deposit.amount);
+    const feeUsd = quote?.feeUsd ?? (deposit.amount * 0.003); // fallback 0.3% estimate
+    const analysis = calculateBreakeven(deposit.amount, activeVault.apy, best.vault.apy, feeUsd);
+
+    // Let the personality decide if fees make it worthwhile
+    if (!config.shouldRebalanceWithFees(analysis)) {
+      const reasoning = config.getBreakevenReasoning(analysis, best.vault.name);
+      addLogEntry({ message: reasoning, type: 'warning' });
+      return;
     }
-  }, [config, activeVault, allVaults, deposit, setRebalanceTarget, setShowRebalanceAlert, addLogEntry]);
+
+    setRebalanceTarget(best.vault);
+    setRebalanceAnalysis(analysis);
+    setShowRebalanceAlert(true);
+
+    const reasoning = config.getBreakevenReasoning(analysis, best.vault.name);
+    addLogEntry({ message: reasoning, type: 'action' });
+  }, [config, activeVault, allVaults, deposit, setRebalanceTarget, setShowRebalanceAlert, setRebalanceAnalysis, addLogEntry]);
 
   useEffect(() => {
     if (screen !== 'dashboard' || !activeVault || !deposit) return;
