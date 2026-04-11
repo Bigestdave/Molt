@@ -21,7 +21,7 @@ export interface PersonalityConfig {
   shouldRebalance: (current: { apy: number; stabilityScore: number; compositeScore?: number }, target: { apy: number; stabilityScore: number; compositeScore?: number }) => boolean;
   getInsight: (vaultName: string, apy: number, stabilityScore: number) => string;
   getRebalanceMessage: (currentApy: number, targetApy: number, targetName: string) => string;
-  getBreakevenReasoning: (analysis: { bridgeFeeUsd: number; breakEvenDays: number; apyDelta: number; profitable: boolean }, targetName: string) => string;
+  getBreakevenReasoning: (analysis: { bridgeFeeUsd: number; breakEvenDays: number; apyDelta: number; profitable: boolean; dailyExtra?: number }, targetName: string) => string;
   shouldRebalanceWithFees: (analysis: { bridgeFeeUsd: number; breakEvenDays: number; profitable: boolean }) => boolean;
   getIdleMessages: () => string[];
 }
