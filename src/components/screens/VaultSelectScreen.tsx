@@ -179,10 +179,8 @@ export default function VaultSelectScreen() {
         action: explorer && hash ? { label: 'View TX', onClick: () => window.open(`${explorer}${hash}`, '_blank') } : undefined,
       });
 
-      setTimeout(() => {
-        setShowConfirm(false);
-        setScreen('dashboard');
-      }, 1500);
+      setShowConfirm(false);
+      setScreen('hatch');
     } catch {
       // Error state handled by useComposer
     }
