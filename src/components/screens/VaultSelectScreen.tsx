@@ -70,7 +70,7 @@ export default function VaultSelectScreen() {
       {/* Top nav — responsive */}
       <nav className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-b border-[var(--yp-border)] bg-[var(--yp-glass-strong)] backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-center gap-2.5">
-          <img src="/logo-molt.png" alt="Agent Molt" className="h-7 w-7" />
+          
            <span className="font-display font-extrabold text-lg sm:text-xl tracking-[-0.03em]">Molt</span>
            <span className="font-data text-[9px] tracking-[0.15em] text-[var(--yp-text-secondary)] opacity-50">YIELDPET</span>
         </div>
