@@ -102,8 +102,8 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
     rebalanceLogic: 'Moves when any vault offers 1.5× current APY',
     creatureSpeed: 3.5,
     voiceStyle: hunterMessages,
-    rankingDescription: 'Pure APY',
-    rankVault: (vault) => vault.apy,
+    rankingDescription: 'Pure APY — highest yield wins',
+    rankVault: (vault) => vault.apy, // 100% APY driven, ignores risk entirely
     shouldRebalance: (current, target) => target.apy > current.apy * 1.5,
     getInsight: (vaultName, apy) => {
       if (apy > 15) {
@@ -128,8 +128,13 @@ export const personalities: Record<PersonalityType, PersonalityConfig> = {
     rebalanceLogic: 'Moves when composite score is 20% higher',
     creatureSpeed: 2.0,
     voiceStyle: sentinelMessages,
-    rankingDescription: 'Risk-adjusted composite',
-    rankVault: (vault) => vault.apy * vault.stabilityScore,
+    rankingDescription: 'Risk-adjusted composite (APY × TVL stability)',
+    rankVault: (vault) => {
+      // NEXUS: Sharpe-ratio style — APY multiplied by TVL stability. Finds the sweet spot.
+      const tvlUsd = vault.tvlUsd ?? 0;
+      const stability = Math.min(tvlUsd / 50_000_000, 1.0);
+      return vault.apy * stability;
+    },
     shouldRebalance: (current, target) => {
       const currentScore = current.apy * current.stabilityScore;
       const targetScore = target.apy * target.stabilityScore;
