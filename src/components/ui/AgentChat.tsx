@@ -219,12 +219,12 @@ export default function AgentChat({ accent, accentRgb }: AgentChatProps) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 right-0 sm:bottom-5 sm:right-5 z-50 w-full sm:w-[380px] sm:max-h-[520px] flex flex-col sm:rounded-2xl overflow-hidden border"
+            className="fixed bottom-0 right-0 sm:bottom-5 sm:right-5 z-50 w-full sm:w-[380px] flex flex-col sm:rounded-2xl overflow-hidden border"
             style={{
               background: 'var(--yp-bg)',
               borderColor: `rgba(${accentRgb}, 0.3)`,
-              height: '100dvh',
-              maxHeight: '100dvh',
+              height: '85dvh',
+              maxHeight: '520px',
             }}
           >
             {/* Header */}
