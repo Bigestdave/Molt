@@ -259,18 +259,31 @@ export default function DashboardScreen() {
             <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
               {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
             </div>
-            {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
+            <div className="flex items-center gap-3 mt-2">
+              {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
+                <button
+                  onClick={() => {
+                    const explorer = CHAIN_EXPLORERS[activeVault.chainId];
+                    if (explorer) window.open(`${explorer}${depositInfo.txHash}`, '_blank');
+                  }}
+                  className="font-data text-[9px] tracking-[0.08em] hover:underline cursor-pointer"
+                  style={{ color: config.accent }}
+                >
+                  VIEW TX ↗
+                </button>
+              )}
               <button
-                onClick={() => {
-                  const explorer = CHAIN_EXPLORERS[activeVault.chainId];
-                  if (explorer) window.open(`${explorer}${depositInfo.txHash}`, '_blank');
+                onClick={() => setShowDepositMore(true)}
+                className="flex items-center gap-1 font-data text-[9px] tracking-[0.08em] cursor-pointer transition-colors px-2 py-1 rounded-lg border"
+                style={{
+                  color: config.accent,
+                  borderColor: `rgba(${config.accentRgb}, 0.3)`,
+                  background: `rgba(${config.accentRgb}, 0.08)`,
                 }}
-                className="font-data text-[9px] mt-1.5 tracking-[0.08em] hover:underline cursor-pointer"
-                style={{ color: config.accent }}
               >
-                VIEW TX ↗
+                <Plus size={10} /> DEPOSIT MORE
               </button>
-            )}
+            </div>
           </div>
 
           {/* Stats grid — horizontal on mobile */}
