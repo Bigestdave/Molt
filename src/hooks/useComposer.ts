@@ -100,7 +100,7 @@ export function useComposer() {
           abi: ERC20_ABI,
           functionName: 'allowance',
           args: [params.fromAddress as Hex, approvalAddress],
-        } as never);
+        } as never) as bigint;
 
         if (allowance < BigInt(params.fromAmount)) {
           const approvalHash = await sendTransactionAsync({
