@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      wallet_sessions: {
+        Row: {
+          active_vault: Json | null
+          created_at: string
+          creature_name: string | null
+          creature_state: string | null
+          deposit: Json | null
+          earned_usd: number | null
+          id: string
+          personality: string
+          rebalance_count: number | null
+          screen: string | null
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          active_vault?: Json | null
+          created_at?: string
+          creature_name?: string | null
+          creature_state?: string | null
+          deposit?: Json | null
+          earned_usd?: number | null
+          id?: string
+          personality: string
+          rebalance_count?: number | null
+          screen?: string | null
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          active_vault?: Json | null
+          created_at?: string
+          creature_name?: string | null
+          creature_state?: string | null
+          deposit?: Json | null
+          earned_usd?: number | null
+          id?: string
+          personality?: string
+          rebalance_count?: number | null
+          screen?: string | null
+          updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
