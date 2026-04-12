@@ -259,6 +259,57 @@ export default function DashboardScreen() {
             <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
               {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
             </div>
+            {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
+              <button
+                onClick={() => {
+                  const explorer = CHAIN_EXPLORERS[activeVault.chainId];
+                  if (explorer) window.open(`${explorer}${depositInfo.txHash}`, '_blank');
+                }}
+                className="font-data text-[9px] tracking-[0.08em] hover:underline cursor-pointer mt-2"
+                style={{ color: config.accent }}
+              >
+                VIEW TX ↗
+              </button>
+            )}
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mx-4 sm:mx-6 mb-3 sm:mb-4">
+            {[
+              { label: 'DEPOSITED', value: `$${depositInfo.amount.toFixed(2)}` },
+              { label: 'EARNED', value: `+$${earnedUSD.toFixed(6)}`, accent: true },
+              { label: 'APY', value: `${activeVault.apy.toFixed(2)}%`, accent: true },
+            ].map(s => (
+              <div key={s.label} className="bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
+                <div className="meta-label mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">{s.label}</div>
+                <div
+                  className="font-data text-[12px] sm:text-[14px] font-medium tracking-[-0.01em]"
+                  style={s.accent ? { color: config.accent } : {}}
+                >
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Deposit More — prominent CTA */}
+          <motion.button
+            onClick={() => setShowDepositMore(true)}
+            whileTap={{ scale: 0.95 }}
+            className="mx-4 sm:mx-6 mb-3 sm:mb-4 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] flex items-center justify-center gap-2 font-display font-bold text-[12px] sm:text-[13px] tracking-[0.04em] py-3 rounded-xl border cursor-pointer transition-all duration-200 hover:shadow-lg"
+            style={{
+              color: config.accent,
+              borderColor: `rgba(${config.accentRgb}, 0.35)`,
+              background: `rgba(${config.accentRgb}, 0.08)`,
+              boxShadow: `0 0 20px rgba(${config.accentRgb}, 0.06)`,
+            }}
+          >
+            <Plus size={14} /> DEPOSIT MORE
+          </motion.button>
+            <div className="font-display font-bold text-[12px] sm:text-[13px] mb-0.5 sm:mb-1 truncate">{activeVault.name}</div>
+            <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
+              {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
+            </div>
             <div className="flex items-center gap-3 mt-2">
               {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
                 <button
