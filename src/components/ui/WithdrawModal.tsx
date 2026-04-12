@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseUnits } from 'viem';
 import { toast } from 'sonner';
-import { Loader2, CheckCircle2, XCircle, RotateCcw, ArrowDownToLine, ChevronDown } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, RotateCcw, ArrowDownToLine, ChevronDown, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSwitchChain } from 'wagmi';
 import { useComposer } from '../../hooks/useComposer';
 import { useWalletState } from './ConnectButton';
 import { useAppStore } from '../../store/appStore';
 import { SUPPORTED_CHAINS, USDC_ADDRESSES, CHAIN_EXPLORERS } from '../../constants/chains';
 import { CHAIN_ICONS } from '../icons/ChainIcons';
+import { getBridgeQuote, type BridgeQuoteResult } from '../../lib/bridgeQuote';
 
 const STEP_LABELS: Record<string, string> = {
   idle: 'Preparing...',
@@ -18,6 +19,8 @@ const STEP_LABELS: Record<string, string> = {
   confirmed: 'Withdrawal confirmed!',
   failed: '',
 };
+
+type ModalView = 'select' | 'confirm' | 'transacting' | 'confirmed' | 'failed';
 
 interface WithdrawModalProps {
   open: boolean;
