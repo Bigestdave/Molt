@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Zap, Clock, DollarSign, TrendingUp, Plus } from 'lucide-react';
+import { Zap, Clock, DollarSign, TrendingUp, Plus, ArrowDownToLine } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
@@ -15,6 +15,7 @@ import { CHAIN_EXPLORERS } from '../../constants/chains';
 import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
 import DepositMoreModal from '../ui/DepositMoreModal';
+import WithdrawModal from '../ui/WithdrawModal';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -102,6 +103,7 @@ export default function DashboardScreen() {
   const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
 
   const [showDepositMore, setShowDepositMore] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
 
   const { data: portfolioPositions } = usePortfolio();
 
