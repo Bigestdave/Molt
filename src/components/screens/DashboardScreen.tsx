@@ -307,54 +307,6 @@ export default function DashboardScreen() {
             <Plus size={14} /> DEPOSIT MORE
           </motion.button>
 
-            <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
-              {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              {depositInfo.txHash && depositInfo.txHash !== '0xpending' && (
-                <button
-                  onClick={() => {
-                    const explorer = CHAIN_EXPLORERS[activeVault.chainId];
-                    if (explorer) window.open(`${explorer}${depositInfo.txHash}`, '_blank');
-                  }}
-                  className="font-data text-[9px] tracking-[0.08em] hover:underline cursor-pointer"
-                  style={{ color: config.accent }}
-                >
-                  VIEW TX ↗
-                </button>
-              )}
-              <button
-                onClick={() => setShowDepositMore(true)}
-                className="flex items-center gap-1 font-data text-[9px] tracking-[0.08em] cursor-pointer transition-colors px-2 py-1 rounded-lg border"
-                style={{
-                  color: config.accent,
-                  borderColor: `rgba(${config.accentRgb}, 0.3)`,
-                  background: `rgba(${config.accentRgb}, 0.08)`,
-                }}
-              >
-                <Plus size={10} /> DEPOSIT MORE
-              </button>
-            </div>
-          </div>
-
-          {/* Stats grid — horizontal on mobile */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mx-4 sm:mx-6 mb-3 sm:mb-4">
-            {[
-              { label: 'DEPOSITED', value: `$${depositInfo.amount.toFixed(2)}` },
-              { label: 'EARNED', value: `+$${earnedUSD.toFixed(6)}`, accent: true },
-              { label: 'APY', value: `${activeVault.apy.toFixed(2)}%`, accent: true },
-            ].map(s => (
-              <div key={s.label} className="bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
-                <div className="meta-label mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">{s.label}</div>
-                <div
-                  className="font-data text-[12px] sm:text-[14px] font-medium tracking-[-0.01em]"
-                  style={s.accent ? { color: config.accent } : {}}
-                >
-                  {s.value}
-                </div>
-              </div>
-            ))}
-          </div>
 
           {/* Vitals — compact */}
           <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-[var(--yp-border)] flex-1">
