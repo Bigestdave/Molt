@@ -273,23 +273,55 @@ export default function DashboardScreen() {
             )}
           </div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mx-4 sm:mx-6 mb-3 sm:mb-4">
-            {[
-              { label: 'DEPOSITED', value: `$${depositInfo.amount.toFixed(2)}` },
-              { label: 'EARNED', value: `+$${earnedUSD.toFixed(6)}`, accent: true },
-              { label: 'APY', value: `${activeVault.apy.toFixed(2)}%`, accent: true },
-            ].map(s => (
-              <div key={s.label} className="bg-[var(--yp-surface)] border border-[var(--yp-border)] rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
-                <div className="meta-label mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">{s.label}</div>
-                <div
-                  className="font-data text-[12px] sm:text-[14px] font-medium tracking-[-0.01em]"
-                  style={s.accent ? { color: config.accent } : {}}
-                >
-                  {s.value}
+          {/* Stats — premium bento card */}
+          <div
+            className="mx-4 sm:mx-6 mb-3 sm:mb-4 rounded-2xl p-[1px] overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, rgba(${config.accentRgb}, 0.3) 0%, rgba(${config.accentRgb}, 0.05) 50%, rgba(${config.accentRgb}, 0.15) 100%)`,
+            }}
+          >
+            <div
+              className="rounded-2xl p-4 sm:p-5 backdrop-blur-xl"
+              style={{
+                background: `linear-gradient(145deg, rgba(${config.accentRgb}, 0.04) 0%, var(--yp-surface) 40%, var(--yp-surface) 100%)`,
+              }}
+            >
+              {/* Deposited — hero stat */}
+              <div className="mb-4">
+                <div className="meta-label text-[8px] sm:text-[9px] mb-1">TOTAL DEPOSITED</div>
+                <div className="font-display font-extrabold text-[28px] sm:text-[34px] tracking-[-0.04em] leading-none">
+                  ${depositInfo.amount.toFixed(2)}
                 </div>
               </div>
-            ))}
+
+              {/* Earned + APY row */}
+              <div className="flex gap-3">
+                <div
+                  className="flex-1 rounded-xl p-3 border"
+                  style={{
+                    background: `rgba(${config.accentRgb}, 0.06)`,
+                    borderColor: `rgba(${config.accentRgb}, 0.15)`,
+                  }}
+                >
+                  <div className="meta-label text-[7px] sm:text-[8px] mb-1">EARNED</div>
+                  <div className="font-data text-[16px] sm:text-[18px] font-semibold tracking-[-0.02em]" style={{ color: config.accent }}>
+                    +${earnedUSD.toFixed(6)}
+                  </div>
+                </div>
+                <div
+                  className="w-[90px] sm:w-[100px] rounded-xl p-3 border text-center"
+                  style={{
+                    background: `rgba(${config.accentRgb}, 0.06)`,
+                    borderColor: `rgba(${config.accentRgb}, 0.15)`,
+                  }}
+                >
+                  <div className="meta-label text-[7px] sm:text-[8px] mb-1">APY</div>
+                  <div className="font-display font-extrabold text-[18px] sm:text-[20px] tracking-[-0.02em]" style={{ color: config.accent }}>
+                    {activeVault.apy.toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Deposit More — prominent CTA */}
