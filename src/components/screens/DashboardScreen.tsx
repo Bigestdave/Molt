@@ -107,6 +107,7 @@ export default function DashboardScreen() {
 
   const [showDepositMore, setShowDepositMore] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const { data: portfolioPositions } = usePortfolio();
 
@@ -233,7 +234,11 @@ export default function DashboardScreen() {
               background: `radial-gradient(ellipse at 50% 60%, rgba(${config.accentRgb}, 0.07) 0%, transparent 70%)`,
             }}
           >
-            <div className="animate-float mb-3 sm:mb-4">
+            <button
+              onClick={() => setShowChat(true)}
+              className="animate-float mb-3 sm:mb-4 cursor-pointer transition-transform hover:scale-105 active:scale-95 relative group"
+              title={`Chat with ${creatureName}`}
+            >
               <CreatureCanvas
                 personality={personality!}
                 accent={config.accent}
@@ -242,7 +247,17 @@ export default function DashboardScreen() {
                 creatureState={creatureState}
                 size={220}
               />
-            </div>
+              <div
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 font-data text-[8px] tracking-[0.1em] px-2.5 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                style={{
+                  background: `rgba(${config.accentRgb}, 0.15)`,
+                  color: config.accent,
+                  border: `1px solid rgba(${config.accentRgb}, 0.25)`,
+                }}
+              >
+                TAP TO CHAT
+              </div>
+            </button>
 
             <div
               className="font-data text-[8px] sm:text-[9px] tracking-[0.15em] px-2 py-0.5 rounded mb-1"
@@ -644,7 +659,7 @@ export default function DashboardScreen() {
         accent={config.accent}
         accentRgb={config.accentRgb}
       />
-      <AgentChat accent={config.accent} accentRgb={config.accentRgb} />
+      <AgentChat accent={config.accent} accentRgb={config.accentRgb} open={showChat} onClose={() => setShowChat(false)} />
     </div>
   );
 }
