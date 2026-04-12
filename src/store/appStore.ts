@@ -158,6 +158,7 @@ export const useAppStore = create<AppState>()(
         rebalanceCount: state.rebalanceCount,
         wallet: state.wallet,
         screen: state.deposit ? state.screen : 'personality',
+        transactions: state.transactions.slice(0, 30),
       }),
     }
   )

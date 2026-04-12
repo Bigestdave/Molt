@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Zap, Clock, DollarSign, TrendingUp, Plus, ArrowDownToLine } from 'lucide-react';
+import { Zap, Clock, DollarSign, TrendingUp, Plus, ArrowDownToLine, Receipt } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
@@ -16,6 +16,7 @@ import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
 import DepositMoreModal from '../ui/DepositMoreModal';
 import WithdrawModal from '../ui/WithdrawModal';
+import TransactionHistory from '../ui/TransactionHistory';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
