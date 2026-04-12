@@ -97,6 +97,15 @@ export default function RebalanceScreen() {
     setActiveVault(rebalanceTarget);
     incrementRebalance();
     addLogEntry({ message: `Rebalanced to ${rebalanceTarget.name}. Position upgraded.`, type: 'success' });
+    useAppStore.getState().addTransaction({
+      type: 'rebalance',
+      amount: useAppStore.getState().deposit?.amount ?? 0,
+      vaultName: rebalanceTarget.name,
+      chainName: rebalanceTarget.chainName,
+      txHash: txHash ?? undefined,
+      fromVault: activeVault?.name,
+      toVault: rebalanceTarget.name,
+    });
 
     if (txHash) {
       const explorer = CHAIN_EXPLORERS[rebalanceTarget.chainId];
