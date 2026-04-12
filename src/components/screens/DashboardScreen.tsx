@@ -128,26 +128,39 @@ export default function DashboardScreen() {
     return () => { cancelled = true; clearInterval(interval); };
   }, [activeVault?.id]);
 
-  // Compute earned USD from portfolio positions or estimate from APY
+  // Validate deposit exists on-chain via portfolio, clear stale state if not found
+  const [portfolioVerified, setPortfolioVerified] = useState(false);
   useEffect(() => {
-    if (!depositInfo || !activeVault) return;
-    // Try to use real portfolio data
-    if (portfolioPositions && portfolioPositions.length > 0) {
+    if (!depositInfo || !activeVault || !wallet) return;
+    // If we have portfolio data loaded and no matching position, deposit is stale
+    if (portfolioPositions && !portfolioVerified) {
       const pos = portfolioPositions.find((p: any) =>
         p.vault?.address?.toLowerCase() === activeVault.address.toLowerCase()
       );
-      if (pos && (pos as any).earned?.usd != null) {
-        setEarnedUSD(Number((pos as any).earned.usd));
-        return;
+      if (pos) {
+        setPortfolioVerified(true);
+        if ((pos as any).earned?.usd != null) {
+          setEarnedUSD(Number((pos as any).earned.usd));
+        }
       }
+      // Don't clear stale state automatically — portfolio API may not cover all vaults
     }
-    // Fallback: estimate from deposit + APY + time
-    const interval = setInterval(() => {
+  }, [depositInfo, activeVault, wallet, portfolioPositions, portfolioVerified, setEarnedUSD]);
+
+  // Estimate earned from APY only if we have a confirmed tx (not stale)
+  useEffect(() => {
+    if (!depositInfo || !activeVault) return;
+    if (depositInfo.txHash === '0xpending') return; // never confirmed
+    if (portfolioVerified) return; // using real data instead
+    // Estimate from deposit + APY + time elapsed
+    const calc = () => {
       const years = (Date.now() - depositInfo.timestamp) / (1000 * 60 * 60 * 24 * 365);
       setEarnedUSD(depositInfo.amount * (activeVault.apy / 100) * years);
-    }, 5000);
+    };
+    calc();
+    const interval = setInterval(calc, 10_000);
     return () => clearInterval(interval);
-  }, [depositInfo, activeVault, portfolioPositions, setEarnedUSD]);
+  }, [depositInfo, activeVault, portfolioVerified, setEarnedUSD]);
 
   if (!config || !activeVault || !depositInfo) return null;
 
