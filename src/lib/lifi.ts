@@ -208,10 +208,14 @@ export interface ComposerQuote {
     to: string;
     data: string;
     value: string;
-    gasLimit: string;
+    gasLimit?: string;
     chainId: number;
   };
-  estimate?: { toAmount: string; toAmountMin: string };
+  estimate?: {
+    toAmount: string;
+    toAmountMin: string;
+    approvalAddress?: string;
+  };
   action?: { fromToken: { symbol: string }; toToken: { symbol: string } };
 }
 
