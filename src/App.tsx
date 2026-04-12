@@ -26,12 +26,23 @@ function useSessionRestore() {
   const setScreen = useAppStore((s) => s.setScreen);
   const setWallet = useAppStore((s) => s.setWallet);
   const hasRestored = useRef(false);
+  const wasConnected = useRef(false);
 
   useEffect(() => {
+    // Reset restore flag when wallet disconnects so reconnect triggers restore
+    if (!isConnected && wasConnected.current) {
+      hasRestored.current = false;
+      wasConnected.current = false;
+      return;
+    }
+
+    if (!isConnected) return;
+    wasConnected.current = true;
+
     if (hasRestored.current) return;
 
-    // Only restore on initial mount when wallet reconnects with existing session
-    if (isConnected && address && deposit && activeVault && personality) {
+    // Restore session when wallet reconnects with existing data
+    if (address && deposit && activeVault && personality) {
       const walletMatches = !wallet || wallet.toLowerCase() === address.toLowerCase();
       if (walletMatches) {
         hasRestored.current = true;
@@ -44,9 +55,7 @@ function useSessionRestore() {
       }
     }
 
-    if (isConnected) {
-      hasRestored.current = true;
-    }
+    hasRestored.current = true;
   }, [isConnected, address, deposit, activeVault, personality, wallet, screen, setScreen, setWallet]);
 }
 
