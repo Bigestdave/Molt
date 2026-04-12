@@ -54,7 +54,12 @@ export function useComposer() {
 
   useEffect(() => {
     if (receipt && step === 'submitted') {
-      setStep('confirmed');
+      if (receipt.status === 'reverted') {
+        setError('Transaction reverted on-chain. This usually means insufficient token balance or allowance.');
+        setStep('failed');
+      } else {
+        setStep('confirmed');
+      }
     }
   }, [receipt, step]);
 
@@ -70,7 +75,6 @@ export function useComposer() {
       setError(null);
       setTxHash(null);
 
-      // Verify wallet is on the expected source chain
       if (chain?.id !== params.fromChain) {
         throw new Error(
           `Your wallet is on the wrong network. Please switch to the correct chain in your wallet and try again.`
@@ -132,6 +136,23 @@ export function useComposer() {
 
       setTxHash(hash);
       setStep('submitted');
+
+      // Wait for on-chain confirmation before resolving
+      if (!publicClient) {
+        throw new Error('Wallet client unavailable.');
+      }
+
+      const txReceipt = await withTimeout(
+        publicClient.waitForTransactionReceipt({ hash }),
+        120_000,
+        'Transaction confirmation'
+      );
+
+      if (txReceipt.status === 'reverted') {
+        throw new Error('Transaction reverted on-chain. You may not have enough tokens for this deposit.');
+      }
+
+      setStep('confirmed');
       return hash;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Transaction failed';
