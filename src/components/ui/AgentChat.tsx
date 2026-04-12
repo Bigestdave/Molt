@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2 } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import { toast } from 'sonner';
@@ -310,10 +310,30 @@ export default function AgentChat({ accent, accentRgb, open, onClose }: AgentCha
 
             {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
               <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md px-4 py-3 bg-[var(--yp-surface)] border border-[var(--yp-border)]">
-                  <div className="flex items-center gap-2">
-                    <Loader2 size={12} className="animate-spin" style={{ color: accent }} />
-                    <span className="font-data text-[11px] text-[var(--yp-text-muted)]">Thinking...</span>
+                <div className="rounded-2xl rounded-bl-md px-4 py-3 bg-[var(--yp-surface)] border border-[var(--yp-border)] min-w-[180px]">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <config.icon size={10} color={accent} />
+                    <span className="font-data text-[8px] tracking-[0.1em]" style={{ color: accent }}>
+                      {(creatureName || config.name).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {['w-[85%]', 'w-[60%]', 'w-[40%]'].map((w, i) => (
+                      <div
+                        key={i}
+                        className={`h-[10px] rounded-md ${w} overflow-hidden`}
+                        style={{ background: `rgba(${accentRgb}, 0.08)` }}
+                      >
+                        <div
+                          className="h-full w-[200%] rounded-md"
+                          style={{
+                            background: `linear-gradient(90deg, transparent 25%, rgba(${accentRgb}, 0.2) 50%, transparent 75%)`,
+                            animation: `shimmer 1.5s ease-in-out infinite`,
+                            animationDelay: `${i * 0.15}s`,
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
