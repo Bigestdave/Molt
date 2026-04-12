@@ -83,6 +83,7 @@ export default function DashboardScreen() {
   const { energyLevel, yieldHealth, stability, activity, creatureState } = useCreatureState();
 
   const personality = useAppStore((s) => s.personality);
+  const wallet = useAppStore((s) => s.wallet);
   
   const activeVault = useAppStore((s) => s.activeVault);
   const depositInfo = useAppStore((s) => s.deposit);
