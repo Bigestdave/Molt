@@ -290,9 +290,9 @@ export default function DashboardScreen() {
               <div className="mb-5">
                 <div className="meta-label text-[8px] sm:text-[9px] mb-2 tracking-[0.15em]">TOTAL DEPOSITED</div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-data text-[14px] sm:text-[16px] text-white/50 leading-none">$</span>
+                  <span className="font-data text-[12px] sm:text-[14px] text-white/50 leading-none">$</span>
                   <span
-                    className="font-data font-bold text-[36px] sm:text-[44px] tracking-[-0.02em] leading-none text-white tabular-nums"
+                    className="font-data font-bold text-[28px] sm:text-[34px] tracking-[-0.02em] leading-none text-white tabular-nums"
                     style={{
                       textShadow: `0 0 30px rgba(${config.accentRgb}, 0.35), 0 0 60px rgba(${config.accentRgb}, 0.15)`,
                     }}
@@ -305,26 +305,26 @@ export default function DashboardScreen() {
               {/* Earned + APY row */}
               <div className="flex gap-3">
                 <div
-                  className="flex-1 rounded-xl p-3 border"
+                  className="flex-1 rounded-xl p-3 border overflow-hidden"
                   style={{
                     background: `rgba(${config.accentRgb}, 0.06)`,
                     borderColor: `rgba(${config.accentRgb}, 0.15)`,
                   }}
                 >
                   <div className="meta-label text-[7px] sm:text-[8px] mb-1">EARNED</div>
-                  <div className="font-data text-[16px] sm:text-[18px] font-semibold tracking-[-0.02em]" style={{ color: config.accent }}>
+                  <div className="font-data text-[14px] sm:text-[16px] font-semibold tracking-[-0.02em] tabular-nums truncate" style={{ color: config.accent }}>
                     +${earnedUSD.toFixed(6)}
                   </div>
                 </div>
                 <div
-                  className="w-[90px] sm:w-[100px] rounded-xl p-3 border text-center"
+                  className="w-[90px] sm:w-[100px] rounded-xl p-3 border text-center overflow-hidden"
                   style={{
                     background: `rgba(${config.accentRgb}, 0.06)`,
                     borderColor: `rgba(${config.accentRgb}, 0.15)`,
                   }}
                 >
                   <div className="meta-label text-[7px] sm:text-[8px] mb-1">APY</div>
-                  <div className="font-display font-extrabold text-[18px] sm:text-[20px] tracking-[-0.02em]" style={{ color: config.accent }}>
+                  <div className="font-data font-bold text-[15px] sm:text-[17px] tracking-[-0.02em] tabular-nums" style={{ color: config.accent }}>
                     {activeVault.apy.toFixed(1)}%
                   </div>
                 </div>
