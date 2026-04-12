@@ -609,6 +609,26 @@ export default function DashboardScreen() {
               )}
             </div>
           </motion.div>
+
+          {/* Transaction History */}
+          <motion.div {...fadeUp(0.25)} className="bento-card p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <Receipt size={13} style={{ color: config.accent }} />
+                <div className="meta-label text-[8px] sm:text-[9px]" style={{ opacity: 1 }}>TRANSACTIONS</div>
+              </div>
+              {transactions.length > 0 && (
+                <span className="font-data text-[9px] text-[var(--yp-text-muted)] tracking-[0.05em]">
+                  {transactions.length}
+                </span>
+              )}
+            </div>
+            <TransactionHistory
+              transactions={transactions}
+              accent={config.accent}
+              accentRgb={config.accentRgb}
+            />
+          </motion.div>
         </div>
       </div>
 
