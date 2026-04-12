@@ -125,6 +125,7 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
         message: `Withdrew $${withdrawAmount.toFixed(2)} from ${activeVault.name} to ${destChainName}.`,
         type: 'action',
       });
+      useAppStore.getState().addTransaction({ type: 'withdraw', amount: withdrawAmount, vaultName: activeVault.name, chainName: destChainName });
 
       const explorer = CHAIN_EXPLORERS[activeVault.chainId];
       toast.success('Withdrawal confirmed!', {
