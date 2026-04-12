@@ -1,7 +1,32 @@
-import { useState, useCallback } from 'react';
-import { useSendTransaction, useWaitForTransactionReceipt, useAccount } from 'wagmi';
+import { useState, useCallback, useEffect } from 'react';
+import { useSendTransaction, useWaitForTransactionReceipt, useAccount, usePublicClient } from 'wagmi';
 import { getComposerQuote, type ComposerQuote } from '../lib/lifi';
-import type { Hex } from 'viem';
+import { encodeFunctionData, type Abi, type Hex } from 'viem';
+
+const ERC20_ABI = [
+  {
+    type: 'function',
+    stateMutability: 'view',
+    name: 'allowance',
+    inputs: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    type: 'function',
+    stateMutability: 'nonpayable',
+    name: 'approve',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+] as const satisfies Abi;
+
+const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export type ComposerStep = 'idle' | 'quoting' | 'signing' | 'submitted' | 'confirmed' | 'failed';
 
@@ -22,14 +47,16 @@ export function useComposer() {
 
   const { chain } = useAccount();
   const { sendTransactionAsync } = useSendTransaction();
+  const publicClient = usePublicClient();
   const { data: receipt, isLoading: isWaitingReceipt } = useWaitForTransactionReceipt({
     hash: txHash ?? undefined,
   });
 
-  // When receipt arrives and we're in 'submitted' state, move to confirmed
-  if (receipt && step === 'submitted') {
-    setStep('confirmed');
-  }
+  useEffect(() => {
+    if (receipt && step === 'submitted') {
+      setStep('confirmed');
+    }
+  }, [receipt, step]);
 
   const execute = useCallback(async (params: {
     fromChain: number;
@@ -59,10 +86,47 @@ export function useComposer() {
       setQuote(q);
 
       setStep('signing');
+
+      const approvalAddress = q.estimate?.approvalAddress as Hex | undefined;
+      const isNativeToken = params.fromToken.toLowerCase() === NATIVE_TOKEN_ADDRESS;
+
+      if (!isNativeToken && approvalAddress) {
+        if (!publicClient) {
+          throw new Error('Wallet client unavailable. Please reconnect your wallet and try again.');
+        }
+
+        const allowance = await publicClient.readContract({
+          address: params.fromToken as Hex,
+          abi: ERC20_ABI,
+          functionName: 'allowance',
+          args: [params.fromAddress as Hex, approvalAddress],
+        } as never) as bigint;
+
+        if (allowance < BigInt(params.fromAmount)) {
+          const approvalHash = await sendTransactionAsync({
+            to: params.fromToken as Hex,
+            data: encodeFunctionData({
+              abi: ERC20_ABI,
+              functionName: 'approve',
+              args: [approvalAddress, BigInt(params.fromAmount)],
+            }),
+            value: 0n,
+            chainId: params.fromChain,
+          });
+
+          await withTimeout(
+            publicClient.waitForTransactionReceipt({ hash: approvalHash }),
+            60_000,
+            'Token approval'
+          );
+        }
+      }
+
       const hash = await sendTransactionAsync({
         to: q.transactionRequest.to as Hex,
         data: q.transactionRequest.data as Hex,
         value: BigInt(q.transactionRequest.value || '0'),
+        gas: q.transactionRequest.gasLimit ? BigInt(q.transactionRequest.gasLimit) : undefined,
         chainId: params.fromChain,
       });
 
@@ -75,7 +139,7 @@ export function useComposer() {
       setStep('failed');
       throw err;
     }
-  }, [sendTransactionAsync, chain?.id]);
+  }, [sendTransactionAsync, publicClient, chain?.id]);
 
   const reset = useCallback(() => {
     setStep('idle');
