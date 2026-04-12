@@ -550,6 +550,14 @@ export default function DashboardScreen() {
           </motion.div>
         </div>
       </div>
+
+      {/* Deposit More Modal */}
+      <DepositMoreModal
+        open={showDepositMore}
+        onClose={() => setShowDepositMore(false)}
+        accent={config.accent}
+        accentRgb={config.accentRgb}
+      />
     </div>
   );
 }
