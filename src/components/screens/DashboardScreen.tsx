@@ -617,6 +617,12 @@ export default function DashboardScreen() {
         accent={config.accent}
         accentRgb={config.accentRgb}
       />
+      <WithdrawModal
+        open={showWithdraw}
+        onClose={() => setShowWithdraw(false)}
+        accent={config.accent}
+        accentRgb={config.accentRgb}
+      />
     </div>
   );
 }
