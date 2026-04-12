@@ -17,6 +17,7 @@ import ApyChart from '../ui/ApyChart';
 import DepositMoreModal from '../ui/DepositMoreModal';
 import WithdrawModal from '../ui/WithdrawModal';
 import TransactionHistory from '../ui/TransactionHistory';
+import AgentChat from '../ui/AgentChat';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -645,6 +646,7 @@ export default function DashboardScreen() {
         accent={config.accent}
         accentRgb={config.accentRgb}
       />
+      <AgentChat accent={config.accent} accentRgb={config.accentRgb} />
     </div>
   );
 }
