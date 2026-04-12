@@ -36,6 +36,9 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
   const addLogEntry = useAppStore((s) => s.addLogEntry);
 
   const [percentage, setPercentage] = useState(100);
+  const [view, setView] = useState<ModalView>('select');
+  const [quote, setQuote] = useState<BridgeQuoteResult | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
   const { address, chainId: walletChainId } = useWalletState();
   const { step, error, txHash, execute, reset: resetComposer } = useComposer();
   const { switchChainAsync } = useSwitchChain();
@@ -50,15 +53,31 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
   }, [walletChainId]);
 
   useEffect(() => {
-    if (open) { resetComposer(); setPercentage(100); }
+    if (open) { resetComposer(); setPercentage(100); setView('select'); setQuote(null); }
   }, [open]);
+
+  // Sync composer step to view
+  useEffect(() => {
+    if (step === 'confirmed') setView('confirmed');
+    else if (step === 'failed') setView('failed');
+    else if (step !== 'idle') setView('transacting');
+  }, [step]);
 
   const depositAmount = depositInfo?.amount ?? 0;
   const withdrawAmount = (depositAmount * percentage) / 100;
   const destChainName = SUPPORTED_CHAINS.find(c => c.id === destChainId)?.name ?? 'Unknown';
-  const isTransacting = step !== 'idle' && step !== 'failed' && step !== 'confirmed';
-  const isFailed = step === 'failed';
-  const isConfirmed = step === 'confirmed';
+  const isTransacting = view === 'transacting';
+  const isFailed = view === 'failed';
+  const isConfirmed = view === 'confirmed';
+
+  const handleReview = async () => {
+    if (!activeVault || withdrawAmount <= 0) return;
+    setQuoteLoading(true);
+    const q = await getBridgeQuote(activeVault.chainId, destChainId, withdrawAmount);
+    setQuote(q);
+    setQuoteLoading(false);
+    setView('confirm');
+  };
 
   const handleWithdraw = async () => {
     if (!activeVault || !address || withdrawAmount <= 0) return;
