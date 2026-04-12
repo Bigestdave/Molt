@@ -646,6 +646,7 @@ export default function DashboardScreen() {
         accent={config.accent}
         accentRgb={config.accentRgb}
       />
+      <AgentChat accent={config.accent} accentRgb={config.accentRgb} />
     </div>
   );
 }
