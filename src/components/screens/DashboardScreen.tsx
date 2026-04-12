@@ -14,6 +14,7 @@ import { formatBreakeven } from '../../lib/breakeven';
 import { CHAIN_EXPLORERS } from '../../constants/chains';
 import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
+import DepositMoreModal from '../ui/DepositMoreModal';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
