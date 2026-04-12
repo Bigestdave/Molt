@@ -659,7 +659,7 @@ export default function DashboardScreen() {
         accent={config.accent}
         accentRgb={config.accentRgb}
       />
-      <AgentChat accent={config.accent} accentRgb={config.accentRgb} />
+      <AgentChat accent={config.accent} accentRgb={config.accentRgb} open={showChat} onClose={() => setShowChat(false)} />
     </div>
   );
 }
