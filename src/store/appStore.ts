@@ -135,6 +135,13 @@ export const useAppStore = create<AppState>()(
       setShowRebalanceAlert: (showRebalanceAlert) => set({ showRebalanceAlert }),
       setRebalanceAnalysis: (rebalanceAnalysis) => set({ rebalanceAnalysis }),
       setUsingCachedData: (usingCachedData) => set({ usingCachedData }),
+      addTransaction: (tx) => {
+        const transactions = [
+          { ...tx, id: crypto.randomUUID(), timestamp: Date.now() },
+          ...get().transactions,
+        ].slice(0, 50);
+        set({ transactions });
+      },
       reset: () => set(initialState),
     }),
     {
