@@ -102,6 +102,7 @@ export default function DashboardScreen() {
   const setScreen = useAppStore((s) => s.setScreen);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
   const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
+  const transactions = useAppStore((s) => s.transactions);
 
   const [showDepositMore, setShowDepositMore] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
