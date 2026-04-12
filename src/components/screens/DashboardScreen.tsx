@@ -300,7 +300,6 @@ export default function DashboardScreen() {
                     {depositInfo.amount.toFixed(2)}
                   </span>
                 </div>
-                </div>
               </div>
 
               {/* Earned + APY row */}
