@@ -101,6 +101,8 @@ export default function DashboardScreen() {
   const addLogEntry = useAppStore((s) => s.addLogEntry);
   const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
 
+  const [showDepositMore, setShowDepositMore] = useState(false);
+
   const { data: portfolioPositions } = usePortfolio();
 
   // Poll real APY from earn API every 30s (skip for mock vaults)
