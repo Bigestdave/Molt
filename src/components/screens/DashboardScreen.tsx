@@ -107,6 +107,7 @@ export default function DashboardScreen() {
 
   const [showDepositMore, setShowDepositMore] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const { data: portfolioPositions } = usePortfolio();
 
