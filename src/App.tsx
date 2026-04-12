@@ -28,8 +28,13 @@ function useSessionRestore() {
   const hasRestored = useRef(false);
   const wasConnected = useRef(false);
 
+  // Check hydration state
+  const isHydrated = useAppStore.persist?.hasHydrated?.() ?? true;
+
   useEffect(() => {
-    // Reset restore flag when wallet disconnects so reconnect triggers restore
+    if (!isHydrated) return;
+
+    // Reset restore flag when wallet disconnects
     if (!isConnected && wasConnected.current) {
       hasRestored.current = false;
       wasConnected.current = false;
@@ -56,7 +61,7 @@ function useSessionRestore() {
     }
 
     hasRestored.current = true;
-  }, [isConnected, address, deposit, activeVault, personality, wallet, screen, setScreen, setWallet]);
+  }, [isHydrated, isConnected, address, deposit, activeVault, personality, wallet, screen, setScreen, setWallet]);
 }
 
 function ScreenManager() {
