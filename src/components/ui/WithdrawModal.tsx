@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseUnits } from 'viem';
 import { toast } from 'sonner';
-import { Loader2, CheckCircle2, XCircle, RotateCcw, ArrowDownToLine, ChevronDown } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, RotateCcw, ArrowDownToLine, ChevronDown, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSwitchChain } from 'wagmi';
 import { useComposer } from '../../hooks/useComposer';
 import { useWalletState } from './ConnectButton';
 import { useAppStore } from '../../store/appStore';
 import { SUPPORTED_CHAINS, USDC_ADDRESSES, CHAIN_EXPLORERS } from '../../constants/chains';
 import { CHAIN_ICONS } from '../icons/ChainIcons';
+import { getBridgeQuote, type BridgeQuoteResult } from '../../lib/bridgeQuote';
 
 const STEP_LABELS: Record<string, string> = {
   idle: 'Preparing...',
@@ -18,6 +19,8 @@ const STEP_LABELS: Record<string, string> = {
   confirmed: 'Withdrawal confirmed!',
   failed: '',
 };
+
+type ModalView = 'select' | 'confirm' | 'transacting' | 'confirmed' | 'failed';
 
 interface WithdrawModalProps {
   open: boolean;
@@ -33,6 +36,9 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
   const addLogEntry = useAppStore((s) => s.addLogEntry);
 
   const [percentage, setPercentage] = useState(100);
+  const [view, setView] = useState<ModalView>('select');
+  const [quote, setQuote] = useState<BridgeQuoteResult | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
   const { address, chainId: walletChainId } = useWalletState();
   const { step, error, txHash, execute, reset: resetComposer } = useComposer();
   const { switchChainAsync } = useSwitchChain();
@@ -47,15 +53,31 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
   }, [walletChainId]);
 
   useEffect(() => {
-    if (open) { resetComposer(); setPercentage(100); }
+    if (open) { resetComposer(); setPercentage(100); setView('select'); setQuote(null); }
   }, [open]);
+
+  // Sync composer step to view
+  useEffect(() => {
+    if (step === 'confirmed') setView('confirmed');
+    else if (step === 'failed') setView('failed');
+    else if (step !== 'idle') setView('transacting');
+  }, [step]);
 
   const depositAmount = depositInfo?.amount ?? 0;
   const withdrawAmount = (depositAmount * percentage) / 100;
   const destChainName = SUPPORTED_CHAINS.find(c => c.id === destChainId)?.name ?? 'Unknown';
-  const isTransacting = step !== 'idle' && step !== 'failed' && step !== 'confirmed';
-  const isFailed = step === 'failed';
-  const isConfirmed = step === 'confirmed';
+  const isTransacting = view === 'transacting';
+  const isFailed = view === 'failed';
+  const isConfirmed = view === 'confirmed';
+
+  const handleReview = async () => {
+    if (!activeVault || withdrawAmount <= 0) return;
+    setQuoteLoading(true);
+    const q = await getBridgeQuote(activeVault.chainId, destChainId, withdrawAmount);
+    setQuote(q);
+    setQuoteLoading(false);
+    setView('confirm');
+  };
 
   const handleWithdraw = async () => {
     if (!activeVault || !address || withdrawAmount <= 0) return;
@@ -166,7 +188,7 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
             </div>
 
             {/* Amount selection */}
-            {!isTransacting && !isConfirmed && !isFailed && (
+            {view === 'select' && (
               <>
                 <div className="mb-4">
                   <label className="meta-label text-[8px] mb-2 block">WITHDRAW AMOUNT</label>
@@ -248,16 +270,98 @@ export default function WithdrawModal({ open, onClose, accent, accentRgb }: With
                 </div>
 
                 <button
-                  onClick={handleWithdraw}
-                  className="w-full py-3 rounded-xl font-display font-bold text-[13px] tracking-[-0.01em] transition-all active:scale-[0.97] cursor-pointer"
+                  onClick={handleReview}
+                  disabled={quoteLoading}
+                  className="w-full py-3 rounded-xl font-display font-bold text-[13px] tracking-[-0.01em] transition-all active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   style={{
                     background: accent,
                     color: '#000',
                   }}
                 >
-                  Withdraw ${withdrawAmount.toFixed(2)}
+                  {quoteLoading ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Fetching estimate...
+                    </>
+                  ) : (
+                    <>
+                      Review Withdrawal
+                      <ArrowRight size={14} />
+                    </>
+                  )}
                 </button>
               </>
+            )}
+
+            {/* Confirmation step */}
+            {view === 'confirm' && (
+              <div className="space-y-4">
+                <div className="rounded-xl p-4 border" style={{ borderColor: `rgba(${accentRgb}, 0.2)`, background: `rgba(${accentRgb}, 0.05)` }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShieldCheck size={14} style={{ color: accent }} />
+                    <span className="font-display font-bold text-[12px]">Confirm Withdrawal</span>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between items-center">
+                      <span className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.05em]">WITHDRAW</span>
+                      <span className="font-data font-semibold text-[13px] tabular-nums">${withdrawAmount.toFixed(2)}</span>
+                    </div>
+
+                    <div className="h-px" style={{ background: `rgba(${accentRgb}, 0.15)` }} />
+
+                    <div className="flex justify-between items-center">
+                      <span className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.05em]">EST. GAS FEE</span>
+                      <span className="font-data text-[12px] tabular-nums text-[var(--yp-text-secondary)]">
+                        ~${quote ? quote.gasUsd.toFixed(2) : '—'}
+                      </span>
+                    </div>
+
+                    {quote && quote.feeUsd > quote.gasUsd && (
+                      <div className="flex justify-between items-center">
+                        <span className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.05em]">BRIDGE FEE</span>
+                        <span className="font-data text-[12px] tabular-nums text-[var(--yp-text-secondary)]">
+                          ~${(quote.feeUsd - quote.gasUsd).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="h-px" style={{ background: `rgba(${accentRgb}, 0.15)` }} />
+
+                    <div className="flex justify-between items-center">
+                      <span className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.05em]">YOU RECEIVE</span>
+                      <span className="font-data font-bold text-[14px] tabular-nums" style={{ color: accent }}>
+                        ~${quote ? parseFloat(quote.estimateToAmount).toFixed(2) : withdrawAmount.toFixed(2)} USDC
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="font-data text-[10px] text-[var(--yp-text-muted)] tracking-[0.05em]">DESTINATION</span>
+                      <span className="flex items-center gap-1.5">
+                        {DestIcon && <DestIcon size={12} />}
+                        <span className="font-data text-[11px]">{destChainName}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <button
+                    onClick={() => setView('select')}
+                    className="flex-1 py-2.5 rounded-xl font-data text-[11px] tracking-[0.05em] border cursor-pointer transition-colors hover:bg-[var(--yp-surface-2)]"
+                    style={{ borderColor: 'var(--yp-border)', color: 'var(--yp-text-muted)' }}
+                  >
+                    BACK
+                  </button>
+                  <button
+                    onClick={handleWithdraw}
+                    className="flex-[2] py-2.5 rounded-xl font-display font-bold text-[13px] tracking-[-0.01em] transition-all active:scale-[0.97] cursor-pointer"
+                    style={{ background: accent, color: '#000' }}
+                  >
+                    Confirm Withdraw
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Transaction progress */}
