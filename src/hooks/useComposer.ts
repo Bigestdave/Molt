@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useSendTransaction, useWaitForTransactionReceipt, useAccount, usePublicClient, useWriteContract } from 'wagmi';
+import { useSendTransaction, useWaitForTransactionReceipt, useAccount, usePublicClient } from 'wagmi';
 import { getComposerQuote, type ComposerQuote } from '../lib/lifi';
-import type { Abi, Hex } from 'viem';
+import { encodeFunctionData, type Abi, type Hex } from 'viem';
 
 const ERC20_ABI = [
   {
@@ -47,7 +47,6 @@ export function useComposer() {
 
   const { chain } = useAccount();
   const { sendTransactionAsync } = useSendTransaction();
-  const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const { data: receipt, isLoading: isWaitingReceipt } = useWaitForTransactionReceipt({
     hash: txHash ?? undefined,
@@ -101,14 +100,17 @@ export function useComposer() {
           abi: ERC20_ABI,
           functionName: 'allowance',
           args: [params.fromAddress as Hex, approvalAddress],
-        });
+        } as never);
 
         if (allowance < BigInt(params.fromAmount)) {
-          const approvalHash = await writeContractAsync({
-            address: params.fromToken as Hex,
-            abi: ERC20_ABI,
-            functionName: 'approve',
-            args: [approvalAddress, BigInt(params.fromAmount)],
+          const approvalHash = await sendTransactionAsync({
+            to: params.fromToken as Hex,
+            data: encodeFunctionData({
+              abi: ERC20_ABI,
+              functionName: 'approve',
+              args: [approvalAddress, BigInt(params.fromAmount)],
+            }),
+            value: 0n,
             chainId: params.fromChain,
           });
 
@@ -137,7 +139,7 @@ export function useComposer() {
       setStep('failed');
       throw err;
     }
-  }, [sendTransactionAsync, writeContractAsync, publicClient, chain?.id]);
+  }, [sendTransactionAsync, publicClient, chain?.id]);
 
   const reset = useCallback(() => {
     setStep('idle');
