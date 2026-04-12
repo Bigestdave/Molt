@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2 } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 import { getPersonality } from '../../lib/personalities';
 import { toast } from 'sonner';
