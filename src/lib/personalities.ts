@@ -35,6 +35,18 @@ const stewardMessages = [
   "Patience is the highest yield. Holding.",
   "Risk metrics within parameters. All clear.",
   "The vault remains solid. No urgency.",
+  "Checked TVL flows — no outflows detected. Position is safe.",
+  "Scanned 12 protocols. Your current vault still ranks top-3 for safety.",
+  "Comparing on-chain insurance coverage across vaults...",
+  "Smart contract audit status: verified. Last audit 23 days ago.",
+  "Yield is compounding normally. Next auto-compound in ~4h.",
+  "Cross-checked oracle feeds — price deviation: 0.02%. All healthy.",
+  "Reviewing protocol governance proposals... nothing that affects your position.",
+  "Monitoring gas costs for potential rebalance routes. No action yet.",
+  "Ran stress test simulation — your vault holds through 40% drawdown scenarios.",
+  "Liquidity depth is strong. You can exit at full value anytime.",
+  "Checked competitor rates — 3 vaults offer higher APY but lower safety scores.",
+  "Protocol revenue is consistent. Yield source is sustainable.",
 ];
 
 const hunterMessages = [
@@ -46,6 +58,18 @@ const hunterMessages = [
   "Capital should always be working harder.",
   "Restless. There's yield on the table somewhere.",
   "APY dipped slightly. Eyes on alternatives.",
+  "Found a vault at 2.3× current APY — but TVL is thin. Risky. Watching.",
+  "New lending market launched on Arbitrum. Monitoring initial rates.",
+  "Three protocols just adjusted emission schedules. Recalculating...",
+  "Yield farm on Base spiking — could be a short window. Evaluating entry.",
+  "Checked bridge costs to 4 chains. Arb → Base is cheapest right now.",
+  "Current position is leaving ~$0.12/day on the table vs. best available.",
+  "Volatile session. DEX volume up 34%. Yield opportunities opening up.",
+  "Watching a new USDC vault — 18.7% APY but only $2M TVL. Too risky... for now.",
+  "Rate arbitrage between Aave and Compound widening. Interesting.",
+  "Your vault dropped 0.3% APY in the last hour. I'm on it.",
+  "Simulated 6 rebalance paths. Best one saves 12bps annually.",
+  "Liquidity mining rewards shifting — some vaults getting juicier.",
 ];
 
 const sentinelMessages = [
@@ -57,6 +81,18 @@ const sentinelMessages = [
   "Cross-referencing protocol metrics. Standby.",
   "Variance analysis complete. Current position holds.",
   "Risk model updated. No action triggered.",
+  "Running Monte Carlo simulation on 30-day yield projections...",
+  "Correlation analysis: your vault APY shows 0.87 r² with ETH gas prices.",
+  "Protocol health score: 94/100. TVL trend: +2.1% this week.",
+  "Impermanent loss risk: negligible for single-asset USDC vault.",
+  "Computed Sharpe ratio across 47 vaults. Current position: top 15%.",
+  "Backtested current strategy over 90 days — projected return: +3.2%.",
+  "Analyzing on-chain whale movements... no unusual activity detected.",
+  "Yield decomposition: 62% lending interest, 38% protocol incentives.",
+  "Standard deviation of APY over 7 days: 0.41%. Within normal band.",
+  "Checked 3 risk frameworks — your vault passes all safety thresholds.",
+  "Fee-adjusted net yield: tracking 0.8% above benchmark.",
+  "Rebalance opportunity score: 0.31. Below threshold (0.40). Holding.",
 ];
 
 export const personalities: Record<PersonalityType, PersonalityConfig> = {
