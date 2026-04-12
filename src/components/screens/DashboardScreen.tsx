@@ -289,13 +289,17 @@ export default function DashboardScreen() {
               {/* Deposited — hero stat */}
               <div className="mb-5">
                 <div className="meta-label text-[8px] sm:text-[9px] mb-2 tracking-[0.15em]">TOTAL DEPOSITED</div>
-                <div
-                  className="font-display font-extrabold text-[38px] sm:text-[46px] tracking-[-0.04em] leading-none text-white"
-                  style={{
-                    textShadow: `0 0 30px rgba(${config.accentRgb}, 0.35), 0 0 60px rgba(${config.accentRgb}, 0.15)`,
-                  }}
-                >
-                  ${depositInfo.amount.toFixed(2)}
+                <div className="flex items-baseline gap-1">
+                  <span className="font-data text-[14px] sm:text-[16px] text-white/50 leading-none">$</span>
+                  <span
+                    className="font-data font-bold text-[36px] sm:text-[44px] tracking-[-0.02em] leading-none text-white tabular-nums"
+                    style={{
+                      textShadow: `0 0 30px rgba(${config.accentRgb}, 0.35), 0 0 60px rgba(${config.accentRgb}, 0.15)`,
+                    }}
+                  >
+                    {depositInfo.amount.toFixed(2)}
+                  </span>
+                </div>
                 </div>
               </div>
 
