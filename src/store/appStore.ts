@@ -33,6 +33,20 @@ export interface DepositInfo {
   txHash: string;
 }
 
+export type TransactionType = 'deposit' | 'withdraw' | 'rebalance';
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  vaultName: string;
+  chainName: string;
+  timestamp: number;
+  txHash?: string;
+  fromVault?: string;
+  toVault?: string;
+}
+
 export interface AppState {
   screen: ScreenName;
   setScreen: (screen: ScreenName) => void;
@@ -66,6 +80,8 @@ export interface AppState {
   setRebalanceAnalysis: (a: BreakevenAnalysis | null) => void;
   usingCachedData: boolean;
   setUsingCachedData: (v: boolean) => void;
+  transactions: Transaction[];
+  addTransaction: (tx: Omit<Transaction, 'id' | 'timestamp'>) => void;
   reset: () => void;
 }
 
@@ -86,6 +102,7 @@ const initialState = {
   showRebalanceAlert: false,
   rebalanceAnalysis: null as BreakevenAnalysis | null,
   usingCachedData: false,
+  transactions: [] as Transaction[],
 };
 
 export const useAppStore = create<AppState>()(
