@@ -287,9 +287,14 @@ export default function DashboardScreen() {
               }}
             >
               {/* Deposited — hero stat */}
-              <div className="mb-4">
-                <div className="meta-label text-[8px] sm:text-[9px] mb-1">TOTAL DEPOSITED</div>
-                <div className="font-display font-extrabold text-[28px] sm:text-[34px] tracking-[-0.04em] leading-none">
+              <div className="mb-5">
+                <div className="meta-label text-[8px] sm:text-[9px] mb-2 tracking-[0.15em]">TOTAL DEPOSITED</div>
+                <div
+                  className="font-display font-extrabold text-[38px] sm:text-[46px] tracking-[-0.04em] leading-none text-white"
+                  style={{
+                    textShadow: `0 0 30px rgba(${config.accentRgb}, 0.35), 0 0 60px rgba(${config.accentRgb}, 0.15)`,
+                  }}
+                >
                   ${depositInfo.amount.toFixed(2)}
                 </div>
               </div>
