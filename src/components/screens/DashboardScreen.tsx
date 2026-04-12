@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Zap, Clock, DollarSign, TrendingUp } from 'lucide-react';
+import { Zap, Clock, DollarSign, TrendingUp, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
