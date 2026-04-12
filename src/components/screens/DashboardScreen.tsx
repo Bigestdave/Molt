@@ -280,15 +280,16 @@ export default function DashboardScreen() {
 
           {/* Stats — premium bento card */}
           <div
-            className="mx-4 sm:mx-6 mb-3 sm:mb-4 rounded-2xl p-[1px] overflow-hidden"
+            className="mx-4 sm:mx-6 mb-3 sm:mb-4 rounded-2xl overflow-hidden border"
             style={{
-              background: `linear-gradient(135deg, rgba(${config.accentRgb}, 0.3) 0%, rgba(${config.accentRgb}, 0.05) 50%, rgba(${config.accentRgb}, 0.15) 100%)`,
+              borderColor: `rgba(${config.accentRgb}, 0.12)`,
+              background: 'var(--yp-surface)',
             }}
           >
             <div
-              className="rounded-2xl p-4 sm:p-5 backdrop-blur-xl"
+              className="rounded-2xl p-4 sm:p-5"
               style={{
-                background: `linear-gradient(145deg, rgba(${config.accentRgb}, 0.04) 0%, var(--yp-surface) 40%, var(--yp-surface) 100%)`,
+                background: `linear-gradient(160deg, rgba(${config.accentRgb}, 0.03) 0%, transparent 50%)`,
               }}
             >
               {/* Deposited — hero stat */}
@@ -298,9 +299,6 @@ export default function DashboardScreen() {
                   <span className="font-data text-[12px] sm:text-[14px] text-white/50 leading-none">$</span>
                   <span
                     className="font-data font-bold text-[28px] sm:text-[34px] tracking-[-0.02em] leading-none text-white tabular-nums"
-                    style={{
-                      textShadow: `0 0 30px rgba(${config.accentRgb}, 0.35), 0 0 60px rgba(${config.accentRgb}, 0.15)`,
-                    }}
                   >
                     {depositInfo.amount.toFixed(2)}
                   </span>
