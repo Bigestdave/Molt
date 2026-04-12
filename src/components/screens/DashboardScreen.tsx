@@ -306,7 +306,7 @@ export default function DashboardScreen() {
           >
             <Plus size={14} /> DEPOSIT MORE
           </motion.button>
-            <div className="font-display font-bold text-[12px] sm:text-[13px] mb-0.5 sm:mb-1 truncate">{activeVault.name}</div>
+
             <div className="font-data text-[9px] sm:text-[10px] text-[var(--yp-text-muted)] truncate">
               {activeVault.protocol} • {activeVault.chainName} • {activeVault.apy.toFixed(2)}% APY
             </div>
