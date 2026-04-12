@@ -334,20 +334,34 @@ export default function DashboardScreen() {
             </div>
           </div>
 
-          {/* Deposit More — prominent CTA */}
-          <motion.button
-            onClick={() => setShowDepositMore(true)}
-            whileTap={{ scale: 0.95 }}
-            className="mx-4 sm:mx-6 mb-3 sm:mb-4 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] flex items-center justify-center gap-2 font-display font-bold text-[12px] sm:text-[13px] tracking-[0.04em] py-3 rounded-xl border cursor-pointer transition-all duration-200 hover:shadow-lg"
-            style={{
-              color: config.accent,
-              borderColor: `rgba(${config.accentRgb}, 0.35)`,
-              background: `rgba(${config.accentRgb}, 0.08)`,
-              boxShadow: `0 0 20px rgba(${config.accentRgb}, 0.06)`,
-            }}
-          >
-            <Plus size={14} /> DEPOSIT MORE
-          </motion.button>
+          {/* Action buttons row */}
+          <div className="mx-4 sm:mx-6 mb-3 sm:mb-4 flex gap-2">
+            <motion.button
+              onClick={() => setShowDepositMore(true)}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 flex items-center justify-center gap-2 font-display font-bold text-[11px] sm:text-[12px] tracking-[0.04em] py-3 rounded-xl border cursor-pointer transition-all duration-200 hover:shadow-lg"
+              style={{
+                color: config.accent,
+                borderColor: `rgba(${config.accentRgb}, 0.35)`,
+                background: `rgba(${config.accentRgb}, 0.08)`,
+                boxShadow: `0 0 20px rgba(${config.accentRgb}, 0.06)`,
+              }}
+            >
+              <Plus size={13} /> DEPOSIT
+            </motion.button>
+            <motion.button
+              onClick={() => setShowWithdraw(true)}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 flex items-center justify-center gap-2 font-display font-bold text-[11px] sm:text-[12px] tracking-[0.04em] py-3 rounded-xl border cursor-pointer transition-all duration-200 hover:shadow-lg"
+              style={{
+                color: 'var(--yp-text-secondary)',
+                borderColor: 'var(--yp-border-hover)',
+                background: 'var(--yp-surface-2)',
+              }}
+            >
+              <ArrowDownToLine size={13} /> WITHDRAW
+            </motion.button>
+          </div>
 
 
           {/* Vitals — compact */}
