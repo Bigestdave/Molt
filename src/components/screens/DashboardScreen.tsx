@@ -299,9 +299,6 @@ export default function DashboardScreen() {
                   <span className="font-data text-[12px] sm:text-[14px] text-white/50 leading-none">$</span>
                   <span
                     className="font-data font-bold text-[28px] sm:text-[34px] tracking-[-0.02em] leading-none text-white tabular-nums"
-                    style={{
-                      textShadow: `0 0 30px rgba(${config.accentRgb}, 0.35), 0 0 60px rgba(${config.accentRgb}, 0.15)`,
-                    }}
                   >
                     {depositInfo.amount.toFixed(2)}
                   </span>
