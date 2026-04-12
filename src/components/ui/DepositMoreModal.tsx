@@ -98,6 +98,7 @@ export default function DepositMoreModal({ open, onClose, accent, accentRgb }: D
       });
 
       addLogEntry({ message: `Deposited additional $${numAmount.toFixed(2)} into ${activeVault.name}.`, type: 'success' });
+      useAppStore.getState().addTransaction({ type: 'deposit', amount: numAmount, vaultName: activeVault.name, chainName: activeVault.chainName, txHash: hash ?? undefined });
 
       const explorer = CHAIN_EXPLORERS[sourceChainId];
       toast.success('Additional deposit confirmed!', {

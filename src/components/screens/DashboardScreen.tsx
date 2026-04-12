@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Zap, Clock, DollarSign, TrendingUp, Plus, ArrowDownToLine } from 'lucide-react';
+import { Zap, Clock, DollarSign, TrendingUp, Plus, ArrowDownToLine, Receipt } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/appStore';
@@ -16,6 +16,7 @@ import CreatureCanvas from '../creature/CreatureCanvas';
 import ApyChart from '../ui/ApyChart';
 import DepositMoreModal from '../ui/DepositMoreModal';
 import WithdrawModal from '../ui/WithdrawModal';
+import TransactionHistory from '../ui/TransactionHistory';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -101,6 +102,7 @@ export default function DashboardScreen() {
   const setScreen = useAppStore((s) => s.setScreen);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
   const addApyDatapoint = useAppStore((s) => s.addApyDatapoint);
+  const transactions = useAppStore((s) => s.transactions);
 
   const [showDepositMore, setShowDepositMore] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -606,6 +608,26 @@ export default function DashboardScreen() {
                 ))
               )}
             </div>
+          </motion.div>
+
+          {/* Transaction History */}
+          <motion.div {...fadeUp(0.25)} className="bento-card p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <Receipt size={13} style={{ color: config.accent }} />
+                <div className="meta-label text-[8px] sm:text-[9px]" style={{ opacity: 1 }}>TRANSACTIONS</div>
+              </div>
+              {transactions.length > 0 && (
+                <span className="font-data text-[9px] text-[var(--yp-text-muted)] tracking-[0.05em]">
+                  {transactions.length}
+                </span>
+              )}
+            </div>
+            <TransactionHistory
+              transactions={transactions}
+              accent={config.accent}
+              accentRgb={config.accentRgb}
+            />
           </motion.div>
         </div>
       </div>

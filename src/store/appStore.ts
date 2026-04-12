@@ -33,6 +33,20 @@ export interface DepositInfo {
   txHash: string;
 }
 
+export type TransactionType = 'deposit' | 'withdraw' | 'rebalance';
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  vaultName: string;
+  chainName: string;
+  timestamp: number;
+  txHash?: string;
+  fromVault?: string;
+  toVault?: string;
+}
+
 export interface AppState {
   screen: ScreenName;
   setScreen: (screen: ScreenName) => void;
@@ -66,6 +80,8 @@ export interface AppState {
   setRebalanceAnalysis: (a: BreakevenAnalysis | null) => void;
   usingCachedData: boolean;
   setUsingCachedData: (v: boolean) => void;
+  transactions: Transaction[];
+  addTransaction: (tx: Omit<Transaction, 'id' | 'timestamp'>) => void;
   reset: () => void;
 }
 
@@ -86,6 +102,7 @@ const initialState = {
   showRebalanceAlert: false,
   rebalanceAnalysis: null as BreakevenAnalysis | null,
   usingCachedData: false,
+  transactions: [] as Transaction[],
 };
 
 export const useAppStore = create<AppState>()(
@@ -118,6 +135,13 @@ export const useAppStore = create<AppState>()(
       setShowRebalanceAlert: (showRebalanceAlert) => set({ showRebalanceAlert }),
       setRebalanceAnalysis: (rebalanceAnalysis) => set({ rebalanceAnalysis }),
       setUsingCachedData: (usingCachedData) => set({ usingCachedData }),
+      addTransaction: (tx) => {
+        const transactions = [
+          { ...tx, id: crypto.randomUUID(), timestamp: Date.now() },
+          ...get().transactions,
+        ].slice(0, 50);
+        set({ transactions });
+      },
       reset: () => set(initialState),
     }),
     {
@@ -134,6 +158,7 @@ export const useAppStore = create<AppState>()(
         rebalanceCount: state.rebalanceCount,
         wallet: state.wallet,
         screen: state.deposit ? state.screen : 'personality',
+        transactions: state.transactions.slice(0, 30),
       }),
     }
   )

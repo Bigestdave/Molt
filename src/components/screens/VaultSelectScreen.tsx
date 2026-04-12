@@ -172,6 +172,7 @@ export default function VaultSelectScreen() {
       setDeposit({ amount: numAmount, tokenAddress: selectedVault.asset, timestamp: Date.now(), txHash: hash ?? '0xconfirmed' });
       setCreatureName(generateCreatureName(personality ?? undefined));
       addLogEntry({ message: 'Deposit confirmed on-chain. Creature hatched!', type: 'success' });
+      useAppStore.getState().addTransaction({ type: 'deposit', amount: numAmount, vaultName: selectedVault.name, chainName: selectedVault.chainName, txHash: hash ?? undefined });
 
       const explorer = CHAIN_EXPLORERS[sourceChainId];
       toast.success('Deposit confirmed!', {
