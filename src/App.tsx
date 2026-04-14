@@ -92,20 +92,7 @@ function useSessionRestore() {
     if (hasRestored.current) return;
     hasRestored.current = true;
 
-    // Check local state first
-    if (deposit && activeVault && personality) {
-      const walletMatches = !wallet || wallet.toLowerCase() === address.toLowerCase();
-      if (walletMatches) {
-        setWallet(address);
-        if (screen === 'personality' || screen === 'vaultSelect' || screen === 'hatch') {
-          setScreen('dashboard');
-          toast.success('Welcome back!', { description: 'Your session has been restored.' });
-        }
-        return;
-      }
-    }
-
-    // Try fetching from database
+    // Always try DB first to get the latest cross-device state
     setIsRestoring(true);
     fetchWalletSession(address).then((session) => {
       if (session && session.personality && session.active_vault && session.deposit) {
@@ -118,10 +105,26 @@ function useSessionRestore() {
         setEarnedUSD(session.earned_usd || 0);
         setScreen('dashboard');
         toast.success('Welcome back!', { description: 'Session restored from cloud.' });
+      } else if (deposit && activeVault && personality) {
+        // Fallback to local state if DB has nothing
+        const walletMatches = !wallet || wallet.toLowerCase() === address.toLowerCase();
+        if (walletMatches) {
+          setWallet(address);
+          if (screen === 'personality' || screen === 'vaultSelect' || screen === 'hatch') {
+            setScreen('dashboard');
+          }
+          toast.success('Welcome back!', { description: 'Your session has been restored.' });
+        }
       }
-      // Short delay so the transition feels smooth, not abrupt
       setTimeout(() => setIsRestoring(false), 600);
     }).catch(() => {
+      // On network error, fall back to local
+      if (deposit && activeVault && personality) {
+        setWallet(address);
+        if (screen === 'personality' || screen === 'vaultSelect' || screen === 'hatch') {
+          setScreen('dashboard');
+        }
+      }
       setIsRestoring(false);
     });
   }, [isHydrated, isConnected, address, deposit, activeVault, personality, wallet, screen, setScreen, setWallet, setPersonality, setDeposit, setActiveVault, setCreatureName, setCreatureState, setEarnedUSD]);
