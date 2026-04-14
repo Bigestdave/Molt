@@ -111,12 +111,14 @@ with one click.
 - **Fonts:** Syne + DM Mono
 
 
-What I Would Build Next
-	∙	Multi-position portfolio (multiple creatures)
-	∙	APY history database for true volatility scoring
-	∙	Mobile app, the creature mechanic is perfect
-for a home screen widget
-	∙	Social layer, share your creature’s evolution
+## What I Would Build Next
+∙	Multi-position portfolio (multiple creatures)
+
+∙	APY history database for true volatility scoring
+	
+∙	Mobile app: the creature mechanic is perfect for a home screen widget
+	
+∙	Social layer: share your creature’s evolution
 
 Feedback on the LI.FI Earn API
 The vault discovery and standardized schema made
@@ -126,7 +128,7 @@ is what made the one-click UX actually possible.
 One request: a historical APY endpoint would
 significantly improve volatility-based rebalancing logic. Right now I simulate history. Real data would make the Architect personality significantlysmarter.
 
-Team
+## Team
 
 Dave — Founding Builder & Creative Director
 
