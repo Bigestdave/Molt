@@ -114,9 +114,9 @@ with one click.
 What I Would Build Next
 	∙	Multi-position portfolio (multiple creatures)
 	∙	APY history database for true volatility scoring
-	∙	Mobile app — the creature mechanic is perfect
+	∙	Mobile app, the creature mechanic is perfect
 for a home screen widget
-	∙	Social layer — share your creature’s evolution
+	∙	Social layer, share your creature’s evolution
 
 Feedback on the LI.FI Earn API
 The vault discovery and standardized schema made
