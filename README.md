@@ -6,7 +6,6 @@ README 1 — DeFi Mullet
 
 > Your yield, alive.
 
-![Molt Banner](./assets/banner.png)
 
 ## What is Molt?
 
@@ -21,8 +20,8 @@ It is a yield agent that acts — and a portfolio
 you can feel.
 
 **Live app:** https://agentmolt.live  
-**Track:** 🎨 DeFi UX Challenge  
-**Hackathon:** DeFi Mullet #1 — Builder Edition
+**Track:** 🎨 AI x DeFi Challenge  
+**Hackathon:** DeFi Mullet #1 (Builder Edition)
 
 ---
 
