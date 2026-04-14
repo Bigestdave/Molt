@@ -13,8 +13,7 @@ as a living creature whose health, energy, and evolution
 directly reflect your real yield performance.
 
 This is not a dashboard. It is not a copilot. 
-It is a yield agent that acts — and a portfolio 
-you can feel.
+It is a yield agent that acts, and a portfolio you can feel.
 
 **Live app:** https://agentmolt.live  
 **Track:** 🎨 AI x DeFi Challenge  
