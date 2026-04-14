@@ -1,6 +1,3 @@
-Here are both READMEs, fully written and ready to paste.
-
-README 1 — DeFi Mullet
 
 # Molt — YieldPet
 
@@ -44,19 +41,20 @@ Molt solves all three.
 ### 1. Agent Personalities
 Instead of a risk slider, you choose an agent with 
 a character. The personality changes the actual 
-rebalancing algorithm — not just the UI skin.
+rebalancing algorithm — not just the UI APY
 
-**🌿 The Keeper** — Conservative  
+
+** The Keeper** — Conservative  
 Prioritizes APY stability over peak yield.  
 `Score = stability × 0.65 + APY × 0.35`  
 Moves when stability > 0.65 AND APY > 15% higher
 
-**⚡ The Hunter** — Aggressive  
+** The Hunter** — Aggressive  
 Pure APY maximizer. Moves fast when opportunity appears.  
 `Score = APY (pure)`  
 Moves when any vault offers > 1.5× current APY
 
-**🔬 The Architect** — Analytical  
+** The Architect** — Analytical  
 Composite risk-adjusted scoring. Shows its math.  
 `Score = APY × stability`  
 Moves when composite score is 20% higher
@@ -99,23 +97,7 @@ swap + bridge + deposit in a single transaction.
 Users enter any vault from any token on any chain 
 with one click.
 
----
 
-## Architecture
-
-
-
-User
-└── Personality Selection
-└── Vault Discovery (LI.FI Earn API)
-└── Agent Scoring (personality rankFn)
-└── Deposit (LI.FI Composer)
-└── Dashboard
-├── Creature Animation (Canvas2D)
-├── APY Chart (live polling)
-├── Agent Log (personality voice)
-└── Rebalance Monitor
-└── Alert → Execute → Evolve
 
 
 ---
@@ -127,27 +109,9 @@ User
 - **Execution:** LI.FI Composer API
 - **Creature:** Procedural Canvas2D blob animation
 - **Fonts:** Syne + DM Mono
-- **Deployment:** agentmolt.live
-
----
-
-## Stability Score Formula
-
-When the API does not return a stability score,
-Molt computes one:
-
-```javascript
-function computeStabilityScore(vault) {
-  const tvlScore = Math.min(vault.tvlUsd / 1_000_000_000, 1) * 0.4;
-  const protocolScore = TRUSTED_PROTOCOLS
-    .includes(vault.protocolName) ? 0.4 : 0.2;
-  const apyScore = vault.apy < 30 ? 0.2 : 0.1;
-  return tvlScore + protocolScore + apyScore;
-}
 
 
 What I Would Build Next
-	∙	Wallet connect + real on-chain deposit execution
 	∙	Multi-position portfolio (multiple creatures)
 	∙	APY history database for true volatility scoring
 	∙	Mobile app — the creature mechanic is perfect
@@ -156,7 +120,7 @@ for a home screen widget
 
 Feedback on the LI.FI Earn API
 The vault discovery and standardized schema made
-building fast. The biggest unlock was Composer —
+building fast. The biggest unlock was Composer,
 abstracting swap + bridge + deposit into one call
 is what made the one-click UX actually possible.
 One request: a historical APY endpoint would
