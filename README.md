@@ -25,7 +25,7 @@ you can feel.
 ## The Problem
 
 Most people do not manage their DeFi yield actively.
-Not because they do not care — because it is 
+Not because they do not care, because it is 
 exhausting and abstract.
 
 Numbers on a screen do not create urgency.
@@ -44,17 +44,17 @@ a character. The personality changes the actual
 rebalancing algorithm — not just the UI APY
 
 
-** The Keeper** — Conservative  
+**The Keeper** — Conservative  
 Prioritizes APY stability over peak yield.  
 `Score = stability × 0.65 + APY × 0.35`  
 Moves when stability > 0.65 AND APY > 15% higher
 
-** The Hunter** — Aggressive  
+**The Hunter** — Aggressive  
 Pure APY maximizer. Moves fast when opportunity appears.  
 `Score = APY (pure)`  
 Moves when any vault offers > 1.5× current APY
 
-** The Architect** — Analytical  
+**The Architect** — Analytical  
 Composite risk-adjusted scoring. Shows its math.  
 `Score = APY × stability`  
 Moves when composite score is 20% higher
