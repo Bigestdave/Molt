@@ -41,7 +41,7 @@ Molt solves all three.
 ### 1. Agent Personalities
 Instead of a risk slider, you choose an agent with 
 a character. The personality changes the actual 
-rebalancing algorithm — not just the UI APY
+rebalancing algorithm, not just the UI APY
 
 
 **The Keeper** — Conservative  
@@ -61,7 +61,7 @@ Moves when composite score is 20% higher
 
 ### 2. Yield Volatility as a Signal
 Molt does not just look at current APY.
-It tracks APY stability over time — a vault 
+It tracks APY stability over time, a vault 
 advertising 12% that swings between 3% and 20% 
 weekly is treated differently from one holding 
 steady at 8%. This is the rebalancing signal 
@@ -127,9 +127,15 @@ One request: a historical APY endpoint would
 significantly improve volatility-based rebalancing logic. Right now I simulate history. Real data would make the Architect personality significantlysmarter.
 
 Team
+
 Dave — Founding Builder & Creative Director
+
 18 years old, Nigeria
 
 Building: Molt, LCU Prep, Citeable
+
 Twitter: @systemthinkersx
-Live app: https://agentmolt.liveRepo: https://github.com/bigestdave/
+
+Live app: https://agentmolt.live
+
+Repo: https://github.com/bigestdave/
